@@ -30,11 +30,8 @@
       let numPics = parseInt(prompt("这一轮要显示几张图片", "3"));
       let seconds = parseInt(prompt("Enter seconds to show each picture:", "2"));
 
-      let pool = await fetchImages(15);
-      let chosen = [];
-      for (let i=0; i<numPics; i++) {
-        chosen.push(pool[Math.floor(Math.random()*pool.length)]);
-      }
+      let pool = await fetchImages(numPics);
+      let chosen = [...pool];
 
       let gameDiv = document.getElementById("game");
       gameDiv.innerHTML = "";
@@ -59,7 +56,7 @@
       let sb = document.getElementById("scoreboard");
       sb.innerHTML = "<h2>Scoreboard</h2>";
       records.forEach(r => {
-        sb.innerHTML += `<p>Round ${r.round}: ${r.pictures.join(", ")} -> ${r.user_answer}</p>`;
+        sb.innerHTML += `<p>Round ${r.round}: ${r.pictures.length} pictures shown -> ${r.user_answer}</p>`;
       });
     }
   </script>
