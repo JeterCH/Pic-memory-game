@@ -1,67 +1,77 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>记忆游戏</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        #game { display: none; }
-        img { width: 100px; height: 100px; margin: 5px; }
-    </style>
+    <title>Pic Memory Game</title>
 </head>
 <body>
-    <h1>记忆游戏</h1>
-    <div id="setup">
-        <label for="numImages">选择图片数量:</label>
-        <input type="number" id="numImages" min="1" value="4"><br><br>
-        <label for="duration">显示时间（秒）:</label>
-        <input type="number" id="duration" min="1" value="3"><br><br>
-        <button id="startBtn">开始游戏</button>
+    <h1>Welcome to Pic Memory Game</h1>
+    <div id="image-container"></div>
+    <button id="pause-button">Pause</button>
+    <div id="duplicate-question" style="display: none;">
+        <p>Are there any duplicates?</p>
+        <button id="yes-button">Yes</button>
+        <button id="no-button">No</button>
     </div>
-    <div id="game">
-        <h2>记忆游戏进行中...</h2>
-        <div id="images"></div>
-        <div id="question"></div>
+    <div id="result-message" style="display: none;"></div>
+    <div id="new-round-question" style="display: none;">
+        <p>再来一局?</p>
+        <button id="yes-round-button">Yes</button>
+        <button id="no-round-button">No</button>
     </div>
     <script>
-        document.getElementById('startBtn').addEventListener('click', function() {
-            const numImages = document.getElementById('numImages').value;
-            const duration = document.getElementById('duration').value;
-            startGame(numImages, duration);
-        });
-
-        function startGame(numImages, duration) {
-            document.getElementById('setup').style.display = 'none';
-            document.getElementById('game').style.display = 'block';
-
-            let images = [];
-            for (let i = 0; i < numImages; i++) {
-                images.push(`https://picsum.photos/200/200?random=${Math.floor(Math.random() * 1000)}`);
-            }
-            displayImages(images, duration);
-        }
-
-        function displayImages(images, duration) {
-            const imgContainer = document.getElementById('images');
-            imgContainer.innerHTML = '';
-            images.forEach(src => {
+        const images = ['img1.jpg', 'img2.jpg', 'img3.jpg']; // Example image array
+        let currentIndex = 0;
+        
+        function showImage() {
+            if (currentIndex < images.length) {
                 const img = document.createElement('img');
-                img.src = src;
-                imgContainer.appendChild(img);
-            });
-
-            setTimeout(() => {
-                imgContainer.innerHTML = '';
-                askForDuplicates(images);
-            }, duration * 1000);
+                img.src = images[currentIndex];
+                img.onload = () => {
+                    document.getElementById('image-container').innerHTML = '';
+                    document.getElementById('image-container').appendChild(img);
+                    setTimeout(() => {
+                        document.getElementById('pause-button').click();
+                    }, 2000); // Show image for 2 seconds
+                };
+            } else {
+                askNewRound();
+            }
         }
-
-        function askForDuplicates(images) {
-            const uniqueImages = new Set(images);
-            const hasDuplicates = uniqueImages.size < images.length;
-            document.getElementById('question').innerHTML = `<p>是否有重复的图片? ${hasDuplicates ? '是' : '否'}</p>`;
+        
+        document.getElementById('pause-button').addEventListener('click', function() {
+            document.getElementById('duplicate-question').style.display = 'block';
+        });
+        
+        document.getElementById('yes-button').addEventListener('click', function() {
+            document.getElementById('duplicate-question').style.display = 'none';
+            currentIndex++;
+            showImage();
+        });
+        
+        document.getElementById('no-button').addEventListener('click', function() {
+            document.getElementById('duplicate-question').style.display = 'none';
+            currentIndex++;
+            showImage();
+        });
+        
+        function askNewRound() {
+            document.getElementById('result-message').innerText = 'Game Over!';
+            document.getElementById('result-message').style.display = 'block';
+            document.getElementById('new-round-question').style.display = 'block';
         }
+        
+        document.getElementById('yes-round-button').addEventListener('click', function() {
+            currentIndex = 0;
+            document.getElementById('new-round-question').style.display = 'none';
+            showImage();
+        });
+        
+        document.getElementById('no-round-button').addEventListener('click', function() {
+            alert('Thank you for playing!');
+        });
+        
+        // Start the game when the page loads
+        showImage();
     </script>
 </body>
 </html>
