@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>图片记忆游戏</title>
+    <title>图片记忆游戏byJeter</title>
     <style>
         body { text-align: center; font-family: Arial, sans-serif; font-size: 48px; }
         h1 { font-size: 72px; }
@@ -15,7 +15,7 @@
     </style>
 </head>
 <body>
-    <h1>游戏会随机显示一些图片，请判断是否有重复。请先选择要显示的图片数量和每张显示几秒钟</h1>
+    <h1>游戏会随机显示一些图片，请判断是否有重复。请先选择要显示的图片数量和时间：</h1>
 
     <!-- 设置表单 -->
     <div id="setup">
@@ -73,7 +73,7 @@
                     <th>局数</th>
                     <th>图片数量</th>
                     <th>每张秒数</th>
-                    <th>玩家回答</th>
+                    <th>玩家作答</th>
                     <th>正确答案</th>
                     <th>重复位置</th>
                 </tr>
@@ -150,7 +150,7 @@
             let correct = hasDuplicate ? "是" : "否";
             let message = "你的回答：" + answer + "。正确答案：" + correct;
             if (hasDuplicate) {
-                message += " 重复位置：" + duplicatePositions.join(" 和 ");
+                message += "。重复位置：" + duplicatePositions.join(" 和 ");
             }
             document.getElementById('result-message').innerText = message;
             document.getElementById('result-message').style.display = 'block';
