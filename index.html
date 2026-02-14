@@ -1,64 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Picture Game</title>
-  <style>
-    body { text-align: center; font-family: Arial, sans-serif; }
-    img { max-width: 300px; margin: 10px; }
-    #scoreboard { margin-top: 20px; text-align: left; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pic Memory Game</title>
 </head>
 <body>
-  <h1>Picture Game</h1>
-  <button onclick="startRound()">Start Round</button>
-  <div id="game"></div>
-  <div id="scoreboard"></div>
-
-  <script>
-    let records = [];
-
-    async function fetchImages(count=10) {
-      // Example: use Unsplash random images (no API key needed for demo)
-      let urls = [];
-      for (let i=0; i<count; i++) {
-        urls.push(`https://source.unsplash.com/random/400x300?sig=${Math.random()}`);
-      }
-      return urls;
-    }
-
-    async function startRound() {
-      let numPics = parseInt(prompt("这一轮要显示几张图片", "3"));
-      let seconds = parseInt(prompt("Enter seconds to show each picture:", "2"));
-
-      let pool = await fetchImages(numPics);
-      let chosen = [...pool];
-
-      let gameDiv = document.getElementById("game");
-      gameDiv.innerHTML = "";
-
-      let i = 0;
-      function showNext() {
-        if (i < chosen.length) {
-          gameDiv.innerHTML = `<img src="${chosen[i]}" alt="pic">`;
-          i++;
-          setTimeout(showNext, seconds*1000);
-        } else {
-          let answer = confirm("Do you see any same picture among them?");
-          let result = answer ? "Yes" : "No";
-          records.push({round: records.length+1, pictures: chosen, user_answer: result});
-          updateScoreboard();
+    <h1>Welcome to the Pic Memory Game</h1>
+    <script>
+        function fetchImages() {
+            const images = [];
+            for (let i = 0; i < 12; i++) {
+                images.push(`https://picsum.photos/400/300?random=${Math.random()}`);
+            }
+            return images;
         }
-      }
-      showNext();
-    }
-
-    function updateScoreboard() {
-      let sb = document.getElementById("scoreboard");
-      sb.innerHTML = "<h2>Scoreboard</h2>";
-      records.forEach(r => {
-        sb.innerHTML += `<p>Round ${r.round}: ${r.pictures.length} pictures shown -> ${r.user_answer}</p>`;
-      });
-    }
-  </script>
+    </script>
 </body>
 </html>
