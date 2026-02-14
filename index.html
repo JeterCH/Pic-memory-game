@@ -67,8 +67,51 @@
             input.value = value;
         }
 
-        // 这里继续保留之前的游戏逻辑（startGame、showImage、endRound等）
-        // 只需要替换掉原来的输入方式即可
+        // 简化版游戏逻辑
+        let chosenImages = [];
+        let currentIndex = 0;
+        let secondsPerPic = 2;
+        let hasDuplicate = false;
+
+        function startGame() {
+            let numPics = parseInt(document.getElementById('num-pics').value);
+            secondsPerPic = parseInt(document.getElementById('seconds').value);
+
+            hasDuplicate = Math.random() < 0.5;
+            chosenImages = [];
+            for (let i = 0; i < numPics; i++) {
+                if (hasDuplicate && i === numPics - 1) {
+                    let duplicateIndex = Math.floor(Math.random() * (numPics - 1));
+                    chosenImages.push(chosenImages[duplicateIndex]);
+                } else {
+                    chosenImages.push("https://picsum.photos/600?random=" + Math.floor(Math.random() * 10000));
+                }
+            }
+            currentIndex = 0;
+            showImage();
+        }
+
+        function showImage() {
+            if (currentIndex < chosenImages.length) {
+                document.getElementById('image-container').innerHTML = `<h3>第 ${currentIndex + 1} 张图片</h3>`;
+                const img = document.createElement('img');
+                img.src = chosenImages[currentIndex];
+                document.getElementById('image-container').appendChild(img);
+
+                setTimeout(() => {
+                    document.getElementById('image-container').innerHTML = '';
+                    setTimeout(() => {
+                        currentIndex++;
+                        showImage();
+                    }, 1000); // 暂停1秒
+                }, secondsPerPic * 1000);
+            } else {
+                document.getElementById('duplicate-question').style.display = 'block';
+            }
+        }
+
+        // 关键绑定：确保按钮能启动游戏
+        document.getElementById('start-button').addEventListener('click', startGame);
     </script>
 </body>
 </html>
