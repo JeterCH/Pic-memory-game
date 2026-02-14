@@ -3,13 +3,13 @@
 <head>
     <title>图片记忆游戏</title>
     <style>
-        body { text-align: center; font-family: Arial, sans-serif; font-size: 48px; } /* 字号放大三倍 */
+        body { text-align: center; font-family: Arial, sans-serif; font-size: 48px; }
         h1 { font-size: 72px; }
         label { font-size: 48px; }
         button { font-size: 48px; padding: 20px 40px; margin: 10px; }
         select { font-size: 48px; padding: 10px; }
         img { max-width: 600px; display: block; margin: 10px auto; }
-        #scoreboard { margin-top: 20px; width: 90%; margin-left: auto; margin-right: auto; border: 1px solid #ccc; }
+        #scoreboard { margin-top: 20px; width: 95%; margin-left: auto; margin-right: auto; border: 1px solid #ccc; }
         #scoreboard table { width: 100%; border-collapse: collapse; font-size: 36px; }
         #scoreboard th, #scoreboard td { border: 1px solid #ccc; padding: 10px; text-align: center; }
     </style>
@@ -21,7 +21,6 @@
     <div id="setup">
         <label>本局显示几张图片：</label>
         <select id="num-pics">
-            <option value="1">1</option>
             <option value="2">2</option>
             <option value="3" selected>3</option>
             <option value="4">4</option>
@@ -36,8 +35,8 @@
         <label>每张图片显示几秒：</label>
         <select id="seconds">
             <option value="1">1 秒</option>
-            <option value="2" selected>2 秒</option>
-            <option value="3">3 秒</option>
+            <option value="2">2 秒</option>
+            <option value="3" selected>3 秒</option>
             <option value="4">4 秒</option>
             <option value="5">5 秒</option>
         </select>
@@ -62,7 +61,6 @@
     <div id="new-round-question" style="display:none;">
         <p>再来一局？</p>
         <button id="yes-round-button">是</button>
-        <button id="no-round-button">否</button>
     </div>
 
     <!-- 记分板 -->
@@ -76,6 +74,7 @@
                     <th>每张秒数</th>
                     <th>玩家回答</th>
                     <th>正确答案</th>
+                    <th>重复位置</th>
                 </tr>
             </thead>
             <tbody id="scoreboard-body"></tbody>
@@ -88,20 +87,30 @@
         let secondsPerPic = 2;
         let hasDuplicate = false;
         let round = 0;
+        let duplicatePositions = [];
 
         function startGame() {
             let numPics = parseInt(document.getElementById('num-pics').value);
             secondsPerPic = parseInt(document.getElementById('seconds').value);
 
             hasDuplicate = Math.random() < 0.5;
+            duplicatePositions = [];
 
             chosenImages = [];
             for (let i = 0; i < numPics; i++) {
                 if (hasDuplicate && i === numPics - 1) {
                     let duplicateIndex = Math.floor(Math.random() * (numPics - 1));
+                    while (duplicateIndex === i - 1) {
+                        duplicateIndex = Math.floor(Math.random() * (numPics - 1));
+                    }
                     chosenImages.push(chosenImages[duplicateIndex]);
+                    duplicatePositions.push(duplicateIndex + 1, i + 1); // 记录重复位置（人类习惯用1开始）
                 } else {
-                    chosenImages.push("https://picsum.photos/800?random=" + Math.floor(Math.random() * 10000));
+                    let newImage;
+                    do {
+                        newImage = "https://picsum.photos/800?random=" + Math.floor(Math.random() * 10000);
+                    } while (i > 0 && newImage === chosenImages[i - 1]); // 避免连续重复
+                    chosenImages.push(newImage);
                 }
             }
 
@@ -125,7 +134,7 @@
                     setTimeout(() => {
                         currentIndex++;
                         showImage();
-                    }, 1000); // 暂停1秒
+                    }, 1000);
                 }, secondsPerPic * 1000);
             } else {
                 document.getElementById('duplicate-question').style.display = 'block';
@@ -135,6 +144,9 @@
         function endRound(answer) {
             let correct = hasDuplicate ? "是" : "否";
             let message = "你的回答：" + answer + "。正确答案：" + correct;
+            if (hasDuplicate) {
+                message += " 重复位置：" + duplicatePositions.join(" 和 ");
+            }
             document.getElementById('result-message').innerText = message;
             document.getElementById('result-message').style.display = 'block';
             document.getElementById('new-round-question').style.display = 'block';
@@ -147,6 +159,7 @@
                 <td>${secondsPerPic}</td>
                 <td>${answer}</td>
                 <td>${correct}</td>
+                <td>${hasDuplicate ? duplicatePositions.join(" 和 ") : "-"}</td>
             `;
             sb.appendChild(row);
         }
