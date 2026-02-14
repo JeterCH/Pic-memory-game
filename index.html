@@ -6,7 +6,6 @@
         body { text-align: center; font-family: Arial, sans-serif; }
         .pic-block { margin: 20px; }
         img { max-width: 600px; display: block; margin: 10px auto; }
-        #progress { margin-top: 10px; font-weight: bold; }
         #scoreboard { margin-top: 20px; width: 90%; margin-left: auto; margin-right: auto; border: 1px solid #ccc; }
         #scoreboard table { width: 100%; border-collapse: collapse; }
         #scoreboard th, #scoreboard td { border: 1px solid #ccc; padding: 5px; text-align: center; }
@@ -28,7 +27,6 @@
 
     <!-- 图片展示 -->
     <div id="image-container"></div>
-    <div id="progress"></div>
 
     <!-- 重复问题 -->
     <div id="duplicate-question" style="display:none;">
@@ -101,15 +99,14 @@
 
         function showImage() {
             if (currentIndex < chosenImages.length) {
-                document.getElementById('progress').innerText = `正在显示第 ${currentIndex + 1} / ${chosenImages.length} 张`;
-                document.getElementById('image-container').innerHTML = `<h3>第 ${currentIndex + 1} 张图片</h3>`;
-                const img = document.createElement('img');
-                img.src = chosenImages[currentIndex];
-                document.getElementById('image-container').appendChild(img);
+                // 在图片上方显示进度
+                document.getElementById('image-container').innerHTML = `
+                    <h3>正在显示第 ${currentIndex + 1} / ${chosenImages.length} 张</h3>
+                    <img src="${chosenImages[currentIndex]}">
+                `;
 
                 setTimeout(() => {
                     document.getElementById('image-container').innerHTML = '';
-                    document.getElementById('progress').innerText = '';
                     setTimeout(() => {
                         currentIndex++;
                         showImage();
