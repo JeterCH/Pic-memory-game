@@ -12,9 +12,9 @@
     <div id="image-container"></div>
 
     <div id="duplicate-question" style="display: none;">
-        <p>有没有重复图片?</p>
-        <button id="yes-button">是</button>
-        <button id="no-button">否</button>
+        <p>Are there any duplicates?</p>
+        <button id="yes-button">Yes</button>
+        <button id="no-button">No</button>
     </div>
 
     <div id="result-message" style="display: none;"></div>
@@ -26,20 +26,44 @@
     </div>
 
     <script>
-        const images = ['img1.jpg', 'img2.jpg', 'img3.jpg']; // Example image array
+        const allImages = ['img1.jpg', 'img2.jpg', 'img3.jpg', 'img4.jpg', 'img5.jpg']; // Example pool
+        let chosenImages = [];
         let currentIndex = 0;
+        let secondsPerPic = 2;
+
+        function startGame() {
+            // Ask user for number of pictures
+            let numPics = parseInt(prompt("显示几张图片？:", "3"));
+            if (isNaN(numPics) || numPics < 1) numPics = 3;
+
+            // Ask user for seconds per picture
+            secondsPerPic = parseInt(prompt("每张显示几秒钟？:", "2"));
+            if (isNaN(secondsPerPic) || secondsPerPic < 1) secondsPerPic = 2;
+
+            // Pick random pictures (duplicates allowed)
+            chosenImages = [];
+            for (let i = 0; i < numPics; i++) {
+                let randomPic = allImages[Math.floor(Math.random() * allImages.length)];
+                chosenImages.push(randomPic);
+            }
+
+            currentIndex = 0;
+            document.getElementById('result-message').style.display = 'none';
+            document.getElementById('new-round-question').style.display = 'none';
+            showImage();
+        }
 
         function showImage() {
-            if (currentIndex < images.length) {
+            if (currentIndex < chosenImages.length) {
                 const img = document.createElement('img');
-                img.src = images[currentIndex];
+                img.src = chosenImages[currentIndex];
                 img.onload = () => {
                     document.getElementById('image-container').innerHTML = '';
                     document.getElementById('image-container').appendChild(img);
                     setTimeout(() => {
                         currentIndex++;
-                        showImage(); // move to next image automatically
-                    }, 2000); // show each image for 2 seconds
+                        showImage();
+                    }, secondsPerPic * 1000);
                 };
             } else {
                 // After all images are shown, ask about duplicates
@@ -64,18 +88,15 @@
         }
 
         document.getElementById('yes-round-button').addEventListener('click', function() {
-            currentIndex = 0;
-            document.getElementById('result-message').style.display = 'none';
-            document.getElementById('new-round-question').style.display = 'none';
-            showImage();
+            startGame();
         });
 
         document.getElementById('no-round-button').addEventListener('click', function() {
-            alert('谢谢游玩!');
+            alert('Thank you for playing!');
         });
 
         // Start the game when the page loads
-        showImage();
+        startGame();
     </script>
 </body>
 </html>
