@@ -4,7 +4,7 @@
     <title>Pic Memory Game</title>
     <style>
         body { text-align: center; font-family: Arial, sans-serif; }
-        img { max-width: 300px; margin: 10px; }
+        img { max-width: 600px; margin: 10px; }
     </style>
 </head>
 <body>
@@ -12,7 +12,7 @@
     <div id="image-container"></div>
 
     <div id="duplicate-question" style="display: none;">
-        <p>Are there any duplicates?</p>
+        <p>Were there any duplicates?</p>
         <button id="yes-button">Yes</button>
         <button id="no-button">No</button>
     </div>
@@ -26,25 +26,34 @@
     </div>
 
     <script>
-        const allImages = ['img1.jpg', 'img2.jpg', 'img3.jpg', 'img4.jpg', 'img5.jpg']; // Example pool
         let chosenImages = [];
         let currentIndex = 0;
         let secondsPerPic = 2;
+        let hasDuplicate = false;
 
         function startGame() {
-            // Ask user for number of pictures
+            // Step 1: Ask number of pictures
             let numPics = parseInt(prompt("Enter number of pictures to show this round:", "3"));
             if (isNaN(numPics) || numPics < 1) numPics = 3;
 
-            // Ask user for seconds per picture
+            // Step 2: Ask seconds per picture
             secondsPerPic = parseInt(prompt("Enter seconds to show each picture:", "2"));
             if (isNaN(secondsPerPic) || secondsPerPic < 1) secondsPerPic = 2;
 
-            // Pick random pictures (duplicates allowed)
+            // Step 3: Randomly decide if there will be duplicates
+            hasDuplicate = Math.random() < 0.5; // 50% chance of duplicates
+
+            // Step 4: Build image list
             chosenImages = [];
             for (let i = 0; i < numPics; i++) {
-                let randomPic = allImages[Math.floor(Math.random() * allImages.length)];
-                chosenImages.push(randomPic);
+                if (hasDuplicate && i === numPics - 1) {
+                    // Force a duplicate of a previous image
+                    let duplicateIndex = Math.floor(Math.random() * (numPics - 1));
+                    chosenImages.push(chosenImages[duplicateIndex]);
+                } else {
+                    // Use Picsum random image
+                    chosenImages.push("https://picsum.photos/600?random=" + Math.floor(Math.random() * 10000));
+                }
             }
 
             currentIndex = 0;
@@ -67,7 +76,7 @@
                     }, secondsPerPic * 1000);
                 };
             } else {
-                // After all images are shown, ask about duplicates
+                // Step 5: Ask user if duplicates were seen
                 document.getElementById('duplicate-question').style.display = 'block';
             }
         }
@@ -83,7 +92,10 @@
         });
 
         function endRound(answer) {
-            document.getElementById('result-message').innerText = 'You answered: ' + answer;
+            // Step 6: Reveal correct result
+            let correct = hasDuplicate ? "Yes" : "No";
+            let message = "You answered: " + answer + ". Correct answer: " + correct;
+            document.getElementById('result-message').innerText = message;
             document.getElementById('result-message').style.display = 'block';
             document.getElementById('new-round-question').style.display = 'block';
         }
