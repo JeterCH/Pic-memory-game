@@ -5,24 +5,76 @@
     <style>
         body { text-align: center; font-family: Arial, sans-serif; }
         img { max-width: 600px; margin: 10px; }
+        #setup, #duplicate-question, #result-message, #new-round-question, #scoreboard {
+            margin-top: 20px;
+        }
+        #scoreboard {
+            text-align: left;
+            margin: 20px auto;
+            width: 80%;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        #scoreboard h2 {
+            text-align: center;
+        }
+        #scoreboard table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #scoreboard th, #scoreboard td {
+            border: 1px solid #ccc;
+            padding: 5px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <h1>Welcome to Pic Memory Game</h1>
+
+    <!-- Step 1 & 2: Setup form -->
+    <div id="setup">
+        <label>Number of pictures: <input type="number" id="num-pics" value="3" min="1"></label><br><br>
+        <label>Seconds per picture: <input type="number" id="seconds" value="2" min="1"></label><br><br>
+        <button id="start-button">Start Game</button>
+    </div>
+
+    <!-- Step 4: Image display -->
     <div id="image-container"></div>
 
+    <!-- Step 5: Duplicate question -->
     <div id="duplicate-question" style="display: none;">
         <p>Were there any duplicates?</p>
         <button id="yes-button">Yes</button>
         <button id="no-button">No</button>
     </div>
 
+    <!-- Step 6: Result -->
     <div id="result-message" style="display: none;"></div>
 
+    <!-- Ask for new round -->
     <div id="new-round-question" style="display: none;">
         <p>再来一局?</p>
         <button id="yes-round-button">Yes</button>
         <button id="no-round-button">No</button>
+    </div>
+
+    <!-- Scoreboard -->
+    <div id="scoreboard">
+        <h2>Scoreboard</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Round</th>
+                    <th>Num Pics</th>
+                    <th>Seconds</th>
+                    <th>Images</th>
+                    <th>User Answer</th>
+                    <th>Correct</th>
+                </tr>
+            </thead>
+            <tbody id="scoreboard-body"></tbody>
+        </table>
     </div>
 
     <script>
@@ -30,18 +82,19 @@
         let currentIndex = 0;
         let secondsPerPic = 2;
         let hasDuplicate = false;
+        let round = 0;
 
         function startGame() {
-            // Step 1: Ask number of pictures
-            let numPics = parseInt(prompt("Enter number of pictures to show this round:", "3"));
+            // Step 1: Get number of pictures
+            let numPics = parseInt(document.getElementById('num-pics').value);
             if (isNaN(numPics) || numPics < 1) numPics = 3;
 
-            // Step 2: Ask seconds per picture
-            secondsPerPic = parseInt(prompt("Enter seconds to show each picture:", "2"));
+            // Step 2: Get seconds per picture
+            secondsPerPic = parseInt(document.getElementById('seconds').value);
             if (isNaN(secondsPerPic) || secondsPerPic < 1) secondsPerPic = 2;
 
-            // Step 3: Randomly decide if there will be duplicates
-            hasDuplicate = Math.random() < 0.5; // 50% chance of duplicates
+            // Step 3: Randomly decide if duplicates will appear
+            hasDuplicate = Math.random() < 0.5; // 50% chance
 
             // Step 4: Build image list
             chosenImages = [];
@@ -57,6 +110,8 @@
             }
 
             currentIndex = 0;
+            round++;
+            document.getElementById('setup').style.display = 'none';
             document.getElementById('result-message').style.display = 'none';
             document.getElementById('new-round-question').style.display = 'none';
             document.getElementById('duplicate-question').style.display = 'none';
@@ -81,6 +136,8 @@
             }
         }
 
+        document.getElementById('start-button').addEventListener('click', startGame);
+
         document.getElementById('yes-button').addEventListener('click', function() {
             document.getElementById('duplicate-question').style.display = 'none';
             endRound("Yes");
@@ -98,18 +155,28 @@
             document.getElementById('result-message').innerText = message;
             document.getElementById('result-message').style.display = 'block';
             document.getElementById('new-round-question').style.display = 'block';
+
+            // Update scoreboard
+            let sb = document.getElementById('scoreboard-body');
+            let row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${round}</td>
+                <td>${chosenImages.length}</td>
+                <td>${secondsPerPic}</td>
+                <td>${chosenImages.map(img => `<a href="${img}" target="_blank">pic</a>`).join(", ")}</td>
+                <td>${answer}</td>
+                <td>${correct}</td>
+            `;
+            sb.appendChild(row);
         }
 
         document.getElementById('yes-round-button').addEventListener('click', function() {
-            startGame();
+            document.getElementById('setup').style.display = 'block';
         });
 
         document.getElementById('no-round-button').addEventListener('click', function() {
             alert('Thank you for playing!');
         });
-
-        // Start the game when the page loads
-        window.onload = startGame;
     </script>
 </body>
 </html>
