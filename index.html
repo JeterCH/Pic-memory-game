@@ -4,21 +4,9 @@
     <title>图片记忆游戏</title>
     <style>
         body { text-align: center; font-family: Arial, sans-serif; }
-        .control-group { margin: 10px; }
-        .number-input {
-            display: inline-flex;
-            align-items: center;
-        }
-        .number-input button {
-            width: 30px;
-            height: 30px;
-            font-size: 18px;
-        }
-        .number-input input {
-            width: 60px;
-            text-align: center;
-            font-size: 16px;
-        }
+        .pic-block { margin: 20px; }
+        img { max-width: 600px; display: block; margin: 10px auto; }
+        .thumb { max-width: 100px; display: block; margin: 5px auto; }
     </style>
 </head>
 <body>
@@ -26,58 +14,69 @@
 
     <!-- 设置表单 -->
     <div id="setup">
-        <div class="control-group">
-            <label>本局显示几张图片：</label>
-            <div class="number-input">
-                <button onclick="changeValue('num-pics', -1)">-</button>
-                <input type="number" id="num-pics" value="3" min="1">
-                <button onclick="changeValue('num-pics', 1)">+</button>
-            </div>
-        </div>
-        <div class="control-group">
-            <label>每张图片显示几秒：</label>
-            <div class="number-input">
-                <button onclick="changeValue('seconds', -1)">-</button>
-                <input type="number" id="seconds" value="2" min="1">
-                <button onclick="changeValue('seconds', 1)">+</button>
-            </div>
-        </div>
+        <label>本局显示几张图片：
+            <input type="number" id="num-pics" value="3" min="1">
+        </label><br><br>
+        <label>每张图片显示几秒：
+            <input type="number" id="seconds" value="2" min="1">
+        </label><br><br>
         <button id="start-button">开始游戏</button>
     </div>
 
+    <!-- 图片展示 -->
     <div id="image-container"></div>
+
+    <!-- 重复问题 -->
     <div id="duplicate-question" style="display:none;">
         <p>是否有重复的图片？</p>
         <button id="yes-button">是</button>
         <button id="no-button">否</button>
     </div>
+
+    <!-- 结果 -->
     <div id="result-message" style="display:none;"></div>
+
+    <!-- 新一局 -->
     <div id="new-round-question" style="display:none;">
         <p>再来一局？</p>
         <button id="yes-round-button">是</button>
         <button id="no-round-button">否</button>
     </div>
 
-    <script>
-        function changeValue(id, delta) {
-            const input = document.getElementById(id);
-            let value = parseInt(input.value) || 0;
-            value += delta;
-            if (value < parseInt(input.min)) value = parseInt(input.min);
-            input.value = value;
-        }
+    <!-- 记分板 -->
+    <div id="scoreboard">
+        <h2>记分板</h2>
+        <table border="1" width="90%" align="center">
+            <thead>
+                <tr>
+                    <th>局数</th>
+                    <th>图片数量</th>
+                    <th>每张秒数</th>
+                    <th>图片（带编号）</th>
+                    <th>玩家回答</th>
+                    <th>正确答案</th>
+                </tr>
+            </thead>
+            <tbody id="scoreboard-body"></tbody>
+        </table>
+    </div>
 
-        // 简化版游戏逻辑
+    <script>
         let chosenImages = [];
         let currentIndex = 0;
         let secondsPerPic = 2;
         let hasDuplicate = false;
+        let round = 0;
 
         function startGame() {
             let numPics = parseInt(document.getElementById('num-pics').value);
+            if (isNaN(numPics) || numPics < 1) numPics = 3;
+
             secondsPerPic = parseInt(document.getElementById('seconds').value);
+            if (isNaN(secondsPerPic) || secondsPerPic < 1) secondsPerPic = 2;
 
             hasDuplicate = Math.random() < 0.5;
+
             chosenImages = [];
             for (let i = 0; i < numPics; i++) {
                 if (hasDuplicate && i === numPics - 1) {
@@ -87,7 +86,13 @@
                     chosenImages.push("https://picsum.photos/600?random=" + Math.floor(Math.random() * 10000));
                 }
             }
+
             currentIndex = 0;
+            round++;
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('result-message').style.display = 'none';
+            document.getElementById('new-round-question').style.display = 'none';
+            document.getElementById('duplicate-question').style.display = 'none';
             showImage();
         }
 
@@ -110,8 +115,51 @@
             }
         }
 
-        // 关键绑定：确保按钮能启动游戏
-        document.getElementById('start-button').addEventListener('click', startGame);
+        function endRound(answer) {
+            let correct = hasDuplicate ? "是" : "否";
+            let message = "你的回答：" + answer + "。正确答案：" + correct;
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-message').style.display = 'block';
+            document.getElementById('new-round-question').style.display = 'block';
+
+            let sb = document.getElementById('scoreboard-body');
+            let row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${round}</td>
+                <td>${chosenImages.length}</td>
+                <td>${secondsPerPic}</td>
+                <td>
+                    ${chosenImages.map((img, i) => `
+                        <div>
+                            第${i+1}张<br>
+                            <img src="${img}" class="thumb">
+                        </div>
+                    `).join("")}
+                </td>
+                <td>${answer}</td>
+                <td>${correct}</td>
+            `;
+            sb.appendChild(row);
+        }
+
+        // 确保所有按钮都绑定事件
+        window.onload = function() {
+            document.getElementById('start-button').addEventListener('click', startGame);
+            document.getElementById('yes-button').addEventListener('click', function() {
+                document.getElementById('duplicate-question').style.display = 'none';
+                endRound("是");
+            });
+            document.getElementById('no-button').addEventListener('click', function() {
+                document.getElementById('duplicate-question').style.display = 'none';
+                endRound("否");
+            });
+            document.getElementById('yes-round-button').addEventListener('click', function() {
+                document.getElementById('setup').style.display = 'block';
+            });
+            document.getElementById('no-round-button').addEventListener('click', function() {
+                alert('感谢你的参与！');
+            });
+        };
     </script>
 </body>
 </html>
