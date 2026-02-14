@@ -1,19 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pic Memory Game</title>
+    <title>记忆游戏</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #game { display: none; }
+        img { width: 100px; height: 100px; margin: 5px; }
+    </style>
 </head>
 <body>
-    <h1>Welcome to the Pic Memory Game</h1>
+    <h1>记忆游戏</h1>
+    <div id="setup">
+        <label for="numImages">选择图片数量:</label>
+        <input type="number" id="numImages" min="1" value="4"><br><br>
+        <label for="duration">显示时间（秒）:</label>
+        <input type="number" id="duration" min="1" value="3"><br><br>
+        <button id="startBtn">开始游戏</button>
+    </div>
+    <div id="game">
+        <h2>记忆游戏进行中...</h2>
+        <div id="images"></div>
+        <div id="question"></div>
+    </div>
     <script>
-        function fetchImages() {
-            const images = [];
-            for (let i = 0; i < 12; i++) {
-                images.push(`https://picsum.photos/400/300?random=${Math.random()}`);
+        document.getElementById('startBtn').addEventListener('click', function() {
+            const numImages = document.getElementById('numImages').value;
+            const duration = document.getElementById('duration').value;
+            startGame(numImages, duration);
+        });
+
+        function startGame(numImages, duration) {
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+
+            let images = [];
+            for (let i = 0; i < numImages; i++) {
+                images.push(`https://picsum.photos/200/200?random=${Math.floor(Math.random() * 1000)}`);
             }
-            return images;
+            displayImages(images, duration);
+        }
+
+        function displayImages(images, duration) {
+            const imgContainer = document.getElementById('images');
+            imgContainer.innerHTML = '';
+            images.forEach(src => {
+                const img = document.createElement('img');
+                img.src = src;
+                imgContainer.appendChild(img);
+            });
+
+            setTimeout(() => {
+                imgContainer.innerHTML = '';
+                askForDuplicates(images);
+            }, duration * 1000);
+        }
+
+        function askForDuplicates(images) {
+            const uniqueImages = new Set(images);
+            const hasDuplicates = uniqueImages.size < images.length;
+            document.getElementById('question').innerHTML = `<p>是否有重复的图片? ${hasDuplicates ? '是' : '否'}</p>`;
         }
     </script>
 </body>
