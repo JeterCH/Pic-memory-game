@@ -6,7 +6,10 @@
         body { text-align: center; font-family: Arial, sans-serif; }
         .pic-block { margin: 20px; }
         img { max-width: 600px; display: block; margin: 10px auto; }
-        .thumb { max-width: 100px; display: block; margin: 5px auto; }
+        #progress { margin-top: 10px; font-weight: bold; }
+        #scoreboard { margin-top: 20px; width: 90%; margin-left: auto; margin-right: auto; border: 1px solid #ccc; }
+        #scoreboard table { width: 100%; border-collapse: collapse; }
+        #scoreboard th, #scoreboard td { border: 1px solid #ccc; padding: 5px; text-align: center; }
     </style>
 </head>
 <body>
@@ -25,6 +28,7 @@
 
     <!-- 图片展示 -->
     <div id="image-container"></div>
+    <div id="progress"></div>
 
     <!-- 重复问题 -->
     <div id="duplicate-question" style="display:none;">
@@ -46,13 +50,12 @@
     <!-- 记分板 -->
     <div id="scoreboard">
         <h2>记分板</h2>
-        <table border="1" width="90%" align="center">
+        <table>
             <thead>
                 <tr>
                     <th>局数</th>
                     <th>图片数量</th>
                     <th>每张秒数</th>
-                    <th>图片（带编号）</th>
                     <th>玩家回答</th>
                     <th>正确答案</th>
                 </tr>
@@ -98,6 +101,7 @@
 
         function showImage() {
             if (currentIndex < chosenImages.length) {
+                document.getElementById('progress').innerText = `正在显示第 ${currentIndex + 1} / ${chosenImages.length} 张`;
                 document.getElementById('image-container').innerHTML = `<h3>第 ${currentIndex + 1} 张图片</h3>`;
                 const img = document.createElement('img');
                 img.src = chosenImages[currentIndex];
@@ -105,6 +109,7 @@
 
                 setTimeout(() => {
                     document.getElementById('image-container').innerHTML = '';
+                    document.getElementById('progress').innerText = '';
                     setTimeout(() => {
                         currentIndex++;
                         showImage();
@@ -128,21 +133,12 @@
                 <td>${round}</td>
                 <td>${chosenImages.length}</td>
                 <td>${secondsPerPic}</td>
-                <td>
-                    ${chosenImages.map((img, i) => `
-                        <div>
-                            第${i+1}张<br>
-                            <img src="${img}" class="thumb">
-                        </div>
-                    `).join("")}
-                </td>
                 <td>${answer}</td>
                 <td>${correct}</td>
             `;
             sb.appendChild(row);
         }
 
-        // 确保所有按钮都绑定事件
         window.onload = function() {
             document.getElementById('start-button').addEventListener('click', startGame);
             document.getElementById('yes-button').addEventListener('click', function() {
