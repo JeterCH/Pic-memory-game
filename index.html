@@ -61,6 +61,7 @@
     <div id="new-round-question" style="display:none;">
         <p>再来一局？</p>
         <button id="yes-round-button">是</button>
+        <button id="no-round-button">否</button>
     </div>
 
     <!-- 记分板 -->
@@ -90,13 +91,20 @@
         let duplicatePositions = [];
 
         function startGame() {
+            // 清空上一局的展示区和结果提示（保留记分板）
+            document.getElementById('image-container').innerHTML = '';
+            document.getElementById('result-message').innerText = '';
+            document.getElementById('result-message').style.display = 'none';
+            document.getElementById('duplicate-question').style.display = 'none';
+            document.getElementById('new-round-question').style.display = 'none';
+
             let numPics = parseInt(document.getElementById('num-pics').value);
             secondsPerPic = parseInt(document.getElementById('seconds').value);
 
             hasDuplicate = Math.random() < 0.5;
             duplicatePositions = [];
-
             chosenImages = [];
+
             for (let i = 0; i < numPics; i++) {
                 if (hasDuplicate && i === numPics - 1) {
                     let duplicateIndex = Math.floor(Math.random() * (numPics - 1));
@@ -104,12 +112,12 @@
                         duplicateIndex = Math.floor(Math.random() * (numPics - 1));
                     }
                     chosenImages.push(chosenImages[duplicateIndex]);
-                    duplicatePositions.push(duplicateIndex + 1, i + 1); // 记录重复位置（人类习惯用1开始）
+                    duplicatePositions.push(duplicateIndex + 1, i + 1);
                 } else {
                     let newImage;
                     do {
                         newImage = "https://picsum.photos/800?random=" + Math.floor(Math.random() * 10000);
-                    } while (i > 0 && newImage === chosenImages[i - 1]); // 避免连续重复
+                    } while (i > 0 && newImage === chosenImages[i - 1]);
                     chosenImages.push(newImage);
                 }
             }
@@ -117,9 +125,6 @@
             currentIndex = 0;
             round++;
             document.getElementById('setup').style.display = 'none';
-            document.getElementById('result-message').style.display = 'none';
-            document.getElementById('new-round-question').style.display = 'none';
-            document.getElementById('duplicate-question').style.display = 'none';
             showImage();
         }
 
@@ -176,6 +181,11 @@
             });
             document.getElementById('yes-round-button').addEventListener('click', function() {
                 document.getElementById('setup').style.display = 'block';
+                document.getElementById('new-round-question').style.display = 'none';
+                document.getElementById('duplicate-question').style.display = 'none';
+                document.getElementById('image-container').innerHTML = '';
+                document.getElementById('result-message').innerText = '';
+                document.getElementById('result-message').style.display = 'none';
             });
             document.getElementById('no-round-button').addEventListener('click', function() {
                 alert('感谢你的参与！');
