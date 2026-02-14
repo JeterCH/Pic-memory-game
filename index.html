@@ -33,11 +33,11 @@
 
         function startGame() {
             // Ask user for number of pictures
-            let numPics = parseInt(prompt("显示几张图片？:", "3"));
+            let numPics = parseInt(prompt("Enter number of pictures to show this round:", "3"));
             if (isNaN(numPics) || numPics < 1) numPics = 3;
 
             // Ask user for seconds per picture
-            secondsPerPic = parseInt(prompt("每张显示几秒钟？:", "2"));
+            secondsPerPic = parseInt(prompt("Enter seconds to show each picture:", "2"));
             if (isNaN(secondsPerPic) || secondsPerPic < 1) secondsPerPic = 2;
 
             // Pick random pictures (duplicates allowed)
@@ -50,6 +50,7 @@
             currentIndex = 0;
             document.getElementById('result-message').style.display = 'none';
             document.getElementById('new-round-question').style.display = 'none';
+            document.getElementById('duplicate-question').style.display = 'none';
             showImage();
         }
 
@@ -96,7 +97,7 @@
         });
 
         // Start the game when the page loads
-        startGame();
+        window.onload = startGame;
     </script>
 </body>
 </html>
