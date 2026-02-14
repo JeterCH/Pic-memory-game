@@ -2,26 +2,33 @@
 <html>
 <head>
     <title>Pic Memory Game</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        img { max-width: 300px; margin: 10px; }
+    </style>
 </head>
 <body>
     <h1>Welcome to Pic Memory Game</h1>
     <div id="image-container"></div>
-    <button id="pause-button">Pause</button>
+
     <div id="duplicate-question" style="display: none;">
         <p>Are there any duplicates?</p>
         <button id="yes-button">Yes</button>
         <button id="no-button">No</button>
     </div>
+
     <div id="result-message" style="display: none;"></div>
+
     <div id="new-round-question" style="display: none;">
         <p>再来一局?</p>
         <button id="yes-round-button">Yes</button>
         <button id="no-round-button">No</button>
     </div>
+
     <script>
         const images = ['img1.jpg', 'img2.jpg', 'img3.jpg']; // Example image array
         let currentIndex = 0;
-        
+
         function showImage() {
             if (currentIndex < images.length) {
                 const img = document.createElement('img');
@@ -30,46 +37,43 @@
                     document.getElementById('image-container').innerHTML = '';
                     document.getElementById('image-container').appendChild(img);
                     setTimeout(() => {
-                        document.getElementById('pause-button').click();
-                    }, 2000); // Show image for 2 seconds
+                        currentIndex++;
+                        showImage(); // move to next image automatically
+                    }, 2000); // show each image for 2 seconds
                 };
             } else {
-                askNewRound();
+                // After all images are shown, ask about duplicates
+                document.getElementById('duplicate-question').style.display = 'block';
             }
         }
-        
-        document.getElementById('pause-button').addEventListener('click', function() {
-            document.getElementById('duplicate-question').style.display = 'block';
-        });
-        
+
         document.getElementById('yes-button').addEventListener('click', function() {
             document.getElementById('duplicate-question').style.display = 'none';
-            currentIndex++;
-            showImage();
+            endRound("Yes");
         });
-        
+
         document.getElementById('no-button').addEventListener('click', function() {
             document.getElementById('duplicate-question').style.display = 'none';
-            currentIndex++;
-            showImage();
+            endRound("No");
         });
-        
-        function askNewRound() {
-            document.getElementById('result-message').innerText = 'Game Over!';
+
+        function endRound(answer) {
+            document.getElementById('result-message').innerText = 'You answered: ' + answer;
             document.getElementById('result-message').style.display = 'block';
             document.getElementById('new-round-question').style.display = 'block';
         }
-        
+
         document.getElementById('yes-round-button').addEventListener('click', function() {
             currentIndex = 0;
+            document.getElementById('result-message').style.display = 'none';
             document.getElementById('new-round-question').style.display = 'none';
             showImage();
         });
-        
+
         document.getElementById('no-round-button').addEventListener('click', function() {
             alert('Thank you for playing!');
         });
-        
+
         // Start the game when the page loads
         showImage();
     </script>
