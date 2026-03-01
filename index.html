@@ -7,11 +7,18 @@
         h1 { font-size: 72px; }
         label { font-size: 48px; }
         button { font-size: 48px; padding: 20px 40px; margin: 10px; }
-        select, input[type="checkbox"] { font-size: 48px; padding: 10px; }
+        select { font-size: 48px; padding: 10px; }
         img { max-width: 800px; display: block; margin: 10px auto; }
         #scoreboard { margin-top: 20px; width: 95%; margin-left: auto; margin-right: auto; border: 1px solid #ccc; }
         #scoreboard table { width: 100%; border-collapse: collapse; font-size: 36px; }
         #scoreboard th, #scoreboard td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+
+        /* 单独放大复选框 */
+        input[type="checkbox"] {
+            width: 60px;
+            height: 60px;
+            margin-right: 20px;
+        }
     </style>
 </head>
 <body>
@@ -70,130 +77,3 @@
 
     <!-- 记分板 -->
     <div id="scoreboard">
-        <h2>记分板</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>局数</th>
-                    <th>图片数量</th>
-                    <th>每张秒数</th>
-                    <th>玩家作答</th>
-                    <th>正确答案</th>
-                    <th>重复位置</th>
-                </tr>
-            </thead>
-            <tbody id="scoreboard-body"></tbody>
-        </table>
-    </div>
-
-    <script>
-        let chosenImages = [];
-        let currentIndex = 0;
-        let secondsPerPic = 2;
-        let hasDuplicate = false;
-        let round = 0;
-        let duplicatePositions = [];
-        let allowConsecutiveDuplicate = true;
-
-        function startGame() {
-            // 清空上一局的展示区和结果提示（保留记分板）
-            document.getElementById('image-container').innerHTML = '';
-            document.getElementById('result-message').innerText = '';
-            document.getElementById('result-message').style.display = 'none';
-            document.getElementById('duplicate-question').style.display = 'none';
-            document.getElementById('new-round-question').style.display = 'none';
-
-            let numPics = parseInt(document.getElementById('num-pics').value);
-            secondsPerPic = parseInt(document.getElementById('seconds').value);
-            allowConsecutiveDuplicate = document.getElementById('allow-consecutive').checked;
-
-            hasDuplicate = Math.random() < 0.5;
-            duplicatePositions = [];
-            chosenImages = [];
-
-            for (let i = 0; i < numPics; i++) {
-                if (hasDuplicate && i === numPics - 1) {
-                    let duplicateIndex = Math.floor(Math.random() * (numPics - 1));
-                    chosenImages.push(chosenImages[duplicateIndex]);
-                    duplicatePositions.push(duplicateIndex + 1, i + 1);
-                } else {
-                    let newImage;
-                    do {
-                        newImage = "https://picsum.photos/800?random=" + Math.floor(Math.random() * 10000);
-                    } while (!allowConsecutiveDuplicate && i > 0 && newImage === chosenImages[i - 1]);
-                    chosenImages.push(newImage);
-                }
-            }
-
-            currentIndex = 0;
-            round++;
-            document.getElementById('setup').style.display = 'none';
-            showImage();
-        }
-
-        function showImage() {
-            if (currentIndex < chosenImages.length) {
-                document.getElementById('image-container').innerHTML = `
-                    <h3 style="font-size:60px;">正在显示第 ${currentIndex + 1} / ${chosenImages.length} 张</h3>
-                    <img src="${chosenImages[currentIndex]}">
-                `;
-                setTimeout(() => {
-                    document.getElementById('image-container').innerHTML = '';
-                    setTimeout(() => {
-                        currentIndex++;
-                        showImage();
-                    }, 2000); // 空白间隔改为 2 秒
-                }, secondsPerPic * 1000);
-            } else {
-                document.getElementById('duplicate-question').style.display = 'block';
-            }
-        }
-
-        function endRound(answer) {
-            let correct = hasDuplicate ? "是" : "否";
-            let message = "你的回答：" + answer + "。正确答案：" + correct;
-            if (hasDuplicate) {
-                message += "。重复位置：" + duplicatePositions.join(" 和 ");
-            }
-            document.getElementById('result-message').innerText = message;
-            document.getElementById('result-message').style.display = 'block';
-            document.getElementById('new-round-question').style.display = 'block';
-
-            let sb = document.getElementById('scoreboard-body');
-            let row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${round}</td>
-                <td>${chosenImages.length}</td>
-                <td>${secondsPerPic}</td>
-                <td>${answer}</td>
-                <td>${correct}</td>
-                <td>${hasDuplicate ? duplicatePositions.join(" 和 ") : "-"}</td>
-            `;
-            sb.appendChild(row);
-        }
-
-        window.onload = function() {
-            document.getElementById('start-button').addEventListener('click', startGame);
-            document.getElementById('yes-button').addEventListener('click', function() {
-                document.getElementById('duplicate-question').style.display = 'none';
-                endRound("是");
-            });
-            document.getElementById('no-button').addEventListener('click', function() {
-                document.getElementById('duplicate-question').style.display = 'none';
-                endRound("否");
-            });
-            document.getElementById('yes-round-button').addEventListener('click', function() {
-                document.getElementById('setup').style.display = 'block';
-                document.getElementById('new-round-question').style.display = 'none';
-                document.getElementById('duplicate-question').style.display = 'none';
-                document.getElementById('image-container').innerHTML = '';
-                document.getElementById('result-message').innerText = '';
-                document.getElementById('result-message').style.display = 'none';
-            });
-            document.getElementById('no-round-button').addEventListener('click', function() {
-                alert('感谢你的参与！');
-            });
-        };
-    </script>
-</body>
-</html>
