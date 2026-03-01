@@ -7,7 +7,7 @@
         h1 { font-size: 72px; }
         label { font-size: 48px; }
         button { font-size: 48px; padding: 20px 40px; margin: 10px; }
-        select { font-size: 48px; padding: 10px; }
+        select, input[type="checkbox"] { font-size: 48px; padding: 10px; }
         img { max-width: 800px; display: block; margin: 10px auto; }
         #scoreboard { margin-top: 20px; width: 95%; margin-left: auto; margin-right: auto; border: 1px solid #ccc; }
         #scoreboard table { width: 100%; border-collapse: collapse; font-size: 36px; }
@@ -16,7 +16,7 @@
 </head>
 <body>
     <h1>请记忆并回答图片是否有重复。</h1>
-        <!-- 设置表单 -->
+    <!-- 设置表单 -->
     <div id="setup">
         <label>点击修改本局显示图片数量：</label>
         <select id="num-pics">
@@ -39,6 +39,11 @@
             <option value="4">4 秒</option>
             <option value="5">5 秒</option>
         </select>
+        <br><br>
+        <label>
+            <input type="checkbox" id="allow-consecutive" checked>
+            允许出现连续重复
+        </label>
         <br><br>
         <button id="start-button">开始游戏</button>
     </div>
@@ -88,6 +93,7 @@
         let hasDuplicate = false;
         let round = 0;
         let duplicatePositions = [];
+        let allowConsecutiveDuplicate = true;
 
         function startGame() {
             // 清空上一局的展示区和结果提示（保留记分板）
@@ -99,6 +105,7 @@
 
             let numPics = parseInt(document.getElementById('num-pics').value);
             secondsPerPic = parseInt(document.getElementById('seconds').value);
+            allowConsecutiveDuplicate = document.getElementById('allow-consecutive').checked;
 
             hasDuplicate = Math.random() < 0.5;
             duplicatePositions = [];
@@ -107,16 +114,13 @@
             for (let i = 0; i < numPics; i++) {
                 if (hasDuplicate && i === numPics - 1) {
                     let duplicateIndex = Math.floor(Math.random() * (numPics - 1));
-                    while (duplicateIndex === i - 1) {
-                        duplicateIndex = Math.floor(Math.random() * (numPics - 1));
-                    }
                     chosenImages.push(chosenImages[duplicateIndex]);
                     duplicatePositions.push(duplicateIndex + 1, i + 1);
                 } else {
                     let newImage;
                     do {
                         newImage = "https://picsum.photos/800?random=" + Math.floor(Math.random() * 10000);
-                    } while (i > 0 && newImage === chosenImages[i - 1]);
+                    } while (!allowConsecutiveDuplicate && i > 0 && newImage === chosenImages[i - 1]);
                     chosenImages.push(newImage);
                 }
             }
@@ -138,7 +142,7 @@
                     setTimeout(() => {
                         currentIndex++;
                         showImage();
-                    }, 1000);
+                    }, 2000); // 空白间隔改为 2 秒
                 }, secondsPerPic * 1000);
             } else {
                 document.getElementById('duplicate-question').style.display = 'block';
