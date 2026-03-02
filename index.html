@@ -19,13 +19,30 @@
             height: 60px;
             margin-right: 20px;
         }
+
+        /* 放大是否有重复的按钮并加大间距 */
+        #duplicate-question button {
+            font-size: 72px;
+            padding: 30px 60px;
+            margin: 40px;
+        }
+
+        /* 缩略图展示区 */
+        #thumbnail-container {
+            margin-top: 20px;
+        }
+        #thumbnail-container img {
+            width: 150px;
+            margin: 10px;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
-    <h1>请记忆并回答图片是否有重复。</h1>
+    <h1>请记忆图片，并回答是否有重复。</h1>
     <!-- 设置表单 -->
     <div id="setup">
-        <label>点击修改本局显示图片数量：</label>
+        <label>修改显示图片数量：</label>
         <select id="num-pics">
             <option value="2">2</option>
             <option value="3" selected>3</option>
@@ -38,7 +55,7 @@
             <option value="10">10</option>
         </select>
         <br><br>
-        <label>点击修改每张图片显示几秒：</label>
+        <label>修改每张图片显示几秒：</label>
         <select id="seconds">
             <option value="1">1 秒</option>
             <option value="2">2 秒</option>
@@ -67,6 +84,9 @@
 
     <!-- 结果 -->
     <div id="result-message" style="display:none;"></div>
+
+    <!-- 缩略图展示 -->
+    <div id="thumbnail-container" style="display:none;"></div>
 
     <!-- 新一局 -->
     <div id="new-round-question" style="display:none;">
@@ -101,12 +121,13 @@
         let allowConsecutiveDuplicate = true;
 
         function startGame() {
-            // 清空上一局的展示区和结果提示（保留记分板）
             document.getElementById('image-container').innerHTML = '';
             document.getElementById('result-message').innerText = '';
             document.getElementById('result-message').style.display = 'none';
             document.getElementById('duplicate-question').style.display = 'none';
             document.getElementById('new-round-question').style.display = 'none';
+            document.getElementById('thumbnail-container').innerHTML = '';
+            document.getElementById('thumbnail-container').style.display = 'none';
 
             let numPics = parseInt(document.getElementById('num-pics').value);
             secondsPerPic = parseInt(document.getElementById('seconds').value);
@@ -116,18 +137,25 @@
             duplicatePositions = [];
             chosenImages = [];
 
+            // 生成不重复的图片
             for (let i = 0; i < numPics; i++) {
-                if (hasDuplicate && i === numPics - 1) {
-                    let duplicateIndex = Math.floor(Math.random() * (numPics - 1));
-                    chosenImages.push(chosenImages[duplicateIndex]);
-                    duplicatePositions.push(duplicateIndex + 1, i + 1);
-                } else {
-                    let newImage;
-                    do {
-                        newImage = "https://picsum.photos/800?random=" + Math.floor(Math.random() * 10000);
-                    } while (!allowConsecutiveDuplicate && i > 0 && newImage === chosenImages[i - 1]);
-                    chosenImages.push(newImage);
+                let newImage;
+                do {
+                    newImage = "https://picsum.photos/800?random=" + Math.floor(Math.random() * 10000);
+                } while ((!allowConsecutiveDuplicate && i > 0 && newImage === chosenImages[i - 1]) 
+                         || chosenImages.includes(newImage));
+                chosenImages.push(newImage);
+            }
+
+            // 如果需要重复，强制制造
+            if (hasDuplicate) {
+                let duplicateIndex = Math.floor(Math.random() * (numPics - 1));
+                let replaceIndex = Math.floor(Math.random() * numPics);
+                while (replaceIndex === duplicateIndex) {
+                    replaceIndex = Math.floor(Math.random() * numPics);
                 }
+                chosenImages[replaceIndex] = chosenImages[duplicateIndex];
+                duplicatePositions.push(duplicateIndex + 1, replaceIndex + 1);
             }
 
             currentIndex = 0;
@@ -147,7 +175,7 @@
                     setTimeout(() => {
                         currentIndex++;
                         showImage();
-                    }, 1000); // 空白间隔改为 1 秒
+                    }, 1000);
                 }, secondsPerPic * 1000);
             } else {
                 document.getElementById('duplicate-question').style.display = 'block';
@@ -163,6 +191,14 @@
             document.getElementById('result-message').innerText = message;
             document.getElementById('result-message').style.display = 'block';
             document.getElementById('new-round-question').style.display = 'block';
+
+            // 显示缩略图
+            let thumbContainer = document.getElementById('thumbnail-container');
+            thumbContainer.innerHTML = "<h3>本轮所有图片缩略图：</h3>";
+            chosenImages.forEach((img, idx) => {
+                thumbContainer.innerHTML += `<img src="${img}" alt="第${idx+1}张">`;
+            });
+            thumbContainer.style.display = 'block';
 
             let sb = document.getElementById('scoreboard-body');
             let row = document.createElement('tr');
