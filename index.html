@@ -70,9 +70,7 @@
 
     <!-- 新一局 -->
     <div id="new-round-question" style="display:none;">
-        <p>再来一局？</p>
-        <button id="yes-round-button">是</button>
-        <button id="no-round-button">否</button>
+        <button id="yes-round-button">再来一局</button>
     </div>
 
     <!-- 记分板 -->
@@ -149,7 +147,7 @@
                     setTimeout(() => {
                         currentIndex++;
                         showImage();
-                    }, 2000); // 空白间隔改为 2 秒
+                    }, 1000); // 空白间隔改为 1 秒
                 }, secondsPerPic * 1000);
             } else {
                 document.getElementById('duplicate-question').style.display = 'block';
@@ -197,9 +195,7 @@
                 document.getElementById('result-message').innerText = '';
                 document.getElementById('result-message').style.display = 'none';
             });
-            document.getElementById('no-round-button').addEventListener('click', function() {
-                alert('感谢你的参与！');
-            });
+        
         };
     </script>
 </body>
