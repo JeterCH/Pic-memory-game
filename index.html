@@ -38,10 +38,6 @@
             margin-top: 20px;
             font-size: 60px;
         }
-
-        #result-message {
-            font-size: 72px; 
-        }
     </style>
 </head>
 <body>
@@ -118,7 +114,7 @@
             <tbody id="scoreboard-body"></tbody>
         </table>
     </div>
-    
+
     <script>
         let chosenImages = [];
         let currentIndex = 0;
@@ -174,6 +170,7 @@
 
         function showImage() {
             if (currentIndex < chosenImages.length) {
+                // 更新进度提示
                 document.getElementById('progress').innerHTML = 
                     `正在显示第 ${currentIndex + 1} / ${chosenImages.length} 张`;
 
@@ -225,29 +222,26 @@
         }
 
         window.onload = function() {
+            document.getElementById('start-button').addEventListener('click', startGame);
             document.getElementById('yes-button').addEventListener('click', function() {
-            document.getElementById('duplicate-question').style.display = 'none';
-            document.getElementById('progress').innerHTML = ''; // 新增：隐藏进度提示
-            endRound("是");
+                document.getElementById('duplicate-question').style.display = 'none';
+                endRound("是");
             });
-
             document.getElementById('no-button').addEventListener('click', function() {
-            document.getElementById('duplicate-question').style.display = 'none';
-            document.getElementById('progress').innerHTML = ''; // 新增：隐藏进度提示
-            endRound("否");
-            });
+                document.getElementById('duplicate-question').style.display = 'none';
+                endRound("否");
 
+            });
            document.getElementById('yes-round-button').addEventListener('click', function() {
-           document.getElementById('setup').style.display = 'block';
-           document.getElementById('new-round-question').style.display = 'none';
-           document.getElementById('duplicate-question').style.display = 'none';
-           document.getElementById('image-container').innerHTML = '';
-           document.getElementById('result-message').innerText = '';
-           document.getElementById('result-message').style.display = 'none';
-           document.getElementById('thumbnail-container').innerHTML = '';
-           document.getElementById('thumbnail-container').style.display = 'none'; // 新增
-           document.getElementById('progress').innerHTML = ''; // 新增，清空进度提示
-           });
+    document.getElementById('setup').style.display = 'block';
+    document.getElementById('new-round-question').style.display = 'none';
+    document.getElementById('duplicate-question').style.display = 'none';
+    document.getElementById('image-container').innerHTML = '';
+    document.getElementById('result-message').innerText = '';
+    document.getElementById('result-message').style.display = 'none';
+    document.getElementById('thumbnail-container').innerHTML = '';
+    document.getElementById('thumbnail-container').style.display = 'none'; // 新增
+});
 
         
         };
