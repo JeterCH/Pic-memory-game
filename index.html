@@ -125,6 +125,7 @@
         let allowConsecutiveDuplicate = true;
 
         function startGame() {
+            document.getElementById('scoreboard').style.display = 'none';
             document.getElementById('progress').innerHTML = '';
             document.getElementById('image-container').innerHTML = '';
             document.getElementById('result-message').innerText = '';
@@ -216,6 +217,8 @@
                 <td>${hasDuplicate ? duplicatePositions.join(" 和 ") : "-"}</td>
             `;
             sb.appendChild(row);
+            document.getElementById('scoreboard').style.display = 'block';
+
         }
 
         window.onload = function() {
@@ -229,14 +232,17 @@
                 endRound("否");
 
             });
-            document.getElementById('yes-round-button').addEventListener('click', function() {
-                document.getElementById('setup').style.display = 'block';
-                document.getElementById('new-round-question').style.display = 'none';
-                document.getElementById('duplicate-question').style.display = 'none';
-                document.getElementById('image-container').innerHTML = '';
-                document.getElementById('result-message').innerText = '';
-                document.getElementById('result-message').style.display = 'none';
-            });
+           document.getElementById('yes-round-button').addEventListener('click', function() {
+    document.getElementById('setup').style.display = 'block';
+    document.getElementById('new-round-question').style.display = 'none';
+    document.getElementById('duplicate-question').style.display = 'none';
+    document.getElementById('image-container').innerHTML = '';
+    document.getElementById('result-message').innerText = '';
+    document.getElementById('result-message').style.display = 'none';
+    document.getElementById('thumbnail-container').innerHTML = '';
+    document.getElementById('thumbnail-container').style.display = 'none'; // 新增
+});
+
         
         };
     </script>
