@@ -3,68 +3,164 @@
 <head>
     <title>图片记忆游戏byJeter</title>
     <style>
-        body { text-align: center; font-family: Arial, sans-serif; font-size: 48px; }
-        h1 { font-size: 72px; }
-        label { font-size: 48px; }
-        button { font-size: 48px; padding: 20px 40px; margin: 10px; }
-        select { font-size: 48px; padding: 10px; }
-        img { max-width: 800px; display: block; margin: 10px auto; }
-        #scoreboard { margin-top: 20px; width: 95%; margin-left: auto; margin-right: auto; border: 1px solid #ccc; }
-        #scoreboard table { width: 100%; border-collapse: collapse; font-size: 36px; }
-        #scoreboard th, #scoreboard td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        /* 基础全局样式：字号降低，增加行高提升可读性 */
+        body { 
+            text-align: center; 
+            font-family: Arial, sans-serif; 
+            font-size: 20px; /* 从48px降至20px，基础文本更舒适 */
+            line-height: 1.5; /* 增加行高，避免文字拥挤 */
+            margin: 20px; /* 增加页面边距，不贴边 */
+        }
 
+        /* 主标题：突出但不夸张 */
+        h1 { 
+            font-size: 36px; /* 从72px降至36px */
+            margin: 20px 0; /* 上下留白，和内容分开 */
+            color: #333; /* 深灰色更柔和，替代纯黑 */
+        }
+
+        /* 标签：比基础文本稍大，清晰但不抢镜 */
+        label { 
+            font-size: 22px; /* 从48px降至22px */
+            margin-right: 10px; /* 和下拉框/复选框拉开距离 */
+            color: #444;
+        }
+
+        /* 按钮：字号适中，点击区域足够大 */
+        button { 
+            font-size: 24px; /* 从48px降至24px */
+            padding: 12px 24px; /* 内边距适配字号，点击区域仍足够 */
+            margin: 8px; 
+            border: none; /* 去掉默认边框，更现代 */
+            border-radius: 8px; /* 圆角更美观 */
+            background-color: #007bff; /* 蓝色按钮更醒目 */
+            color: white; /* 白色文字对比清晰 */
+            cursor: pointer;
+            transition: background-color 0.2s; /* hover动效 */
+        }
+        /* 按钮hover效果，提升交互体验 */
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* 下拉框：字号适配，样式统一 */
+        select { 
+            font-size: 20px; /* 从48px降至20px，和基础文本一致 */
+            padding: 8px 12px; 
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            margin: 0 8px;
+        }
+
+        /* 图片：保留宽度，增加底部留白 */
+        img { 
+            max-width: 800px; 
+            display: block; 
+            margin: 15px auto; /* 增加上下边距 */
+            border-radius: 8px; /* 图片圆角，更柔和 */
+        }
+
+        /* 进度提示：突出显示，字号稍大 */
+        #progress {
+            margin-top: 20px;
+            font-size: 28px; /* 进度提示醒目但不夸张 */
+            font-weight: bold; /* 加粗强调 */
+            color: #007bff;
+        }
+
+        /* 结果提示：清晰易读 */
+        #result-message {
+            display:none;
+            margin-top: 20px;
+            font-size: 24px; /* 结果文字稍大，突出 */
+            color: #28a745; /* 绿色更友好 */
+            line-height: 1.8; /* 换行后间距更舒适 */
+        }
+
+        /* 记分板：适配字号，不拥挤 */
+        #scoreboard { 
+            margin-top: 30px; 
+            width: 95%; 
+            margin-left: auto; 
+            margin-right: auto; 
+            border: 1px solid #eee; /* 浅边框更柔和 */
+            border-radius: 8px;
+            overflow: hidden; /* 配合圆角 */
+        }
+        #scoreboard table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 18px; /* 从36px降至18px，表格不拥挤 */
+        }
+        #scoreboard th { 
+            border: 1px solid #eee; 
+            padding: 12px 8px; 
+            text-align: center;
+            background-color: #f8f9fa; /* 表头背景色，区分内容 */
+            font-weight: bold;
+            font-size: 19px;
+        }
+        #scoreboard td { 
+            border: 1px solid #eee; 
+            padding: 10px 8px; 
+            text-align: center;
+        }
+
+        /* 复选框：适配整体样式 */
         input[type="checkbox"] {
-            width: 60px;
-            height: 60px;
-            margin-right: 20px;
+            width: 20px; /* 从60px降至20px，正常大小 */
+            height: 20px;
+            margin-right: 8px;
+            vertical-align: middle; /* 和文字对齐 */
         }
 
+        /* 重复问题区域按钮：单独调整，更醒目 */
         #duplicate-question button {
-            font-size: 72px;
-            padding: 30px 60px;
-            margin: 40px;
+            font-size: 28px; /* 核心操作按钮稍大 */
+            padding: 15px 30px;
+            margin: 15px;
         }
 
+        /* 缩略图容器：适配字号 */
         #thumbnail-container {
             margin-top: 20px;
         }
+        #thumbnail-container h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
         #thumbnail-container img {
-            width: 150px;
-            margin: 10px;
+            width: 120px; /* 从150px降至120px，更紧凑 */
+            margin: 8px;
             display: inline-block;
+            border: 1px solid #eee;
         }
 
-        #progress {
-            margin-top: 20px;
-            font-size: 60px;
-        }
-
-        /* 关键：让结果文字支持换行符，分行显示 */
-        #result-message {
-            display:none;
-            white-space: pre-line;
-            margin-top: 20px;
-            font-size: 48px;
+        /* 重复问题区域文本 */
+        #duplicate-question p {
+            font-size: 24px;
+            color: #333;
+            margin: 20px 0;
         }
     </style>
 </head>
 <body>
-    <h1>请记忆图片，并回答是否有重复。</h1>
+    <h1>请记忆图片是否有重复</h1>
     <div id="setup">
-        <label>修改显示图片数量：</label>
+        <label>显示图片数量：</label>
         <select id="num-pics">
-            <option value="2">2</option>
-            <option value="3" selected>3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-            <option value="9">9</option>
-            <option value="10">10</option>
+            <option value="2">2 张</option>
+            <option value="3">3 张</option>
+            <option value="4" selected>4 张</option>
+            <option value="5">5 张</option>
+            <option value="6">6 张</option>
+            <option value="7">7 张</option>
+            <option value="8">8 张</option>
+            <option value="9">9 张</option>
+            <option value="10">10 张</option>
         </select>
         <br><br>
-        <label>修改每张图片显示几秒：</label>
+        <label>每张图显示：</label>
         <select id="seconds">
             <option value="1">1 秒</option>
             <option value="2">2 秒</option>
@@ -214,7 +310,8 @@
                 img.alt = `第${currentIndex+1}张图片`;
                 img.style.maxWidth = '800px';
                 img.style.display = 'block';
-                img.style.margin = '10px auto';
+                img.style.margin = '15px auto';
+                img.style.borderRadius = '8px';
 
                 // 清空容器并添加图片
                 const imgContainer = document.getElementById('image-container');
@@ -249,17 +346,18 @@
             }
         }
 
+        // 优化后的endRound函数（用<br>换行）
         function endRound(answer) {
             // 核心修复：清空进度提示，解决progress残留问题
             document.getElementById('progress').innerHTML = '';
             
-            // 生成结果提示（拆分三行显示）
+            // 生成结果提示（用<br>拆分三行显示）
             const correct = hasDuplicate ? "是" : "否";
-            let message = `你的回答：${answer}。\n正确答案：${correct}。`;
+            let message = `你的回答：${answer}。<br>正确答案：${correct}。`;
             if (hasDuplicate) {
-                message += `\n重复位置：${duplicatePositions.join(" 和 ")}。`;
+                message += `<br>重复位置：${duplicatePositions.join(" 和 ")}。`;
             }
-            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-message').innerHTML = message;
             document.getElementById('result-message').style.display = 'block';
             document.getElementById('new-round-question').style.display = 'block';
 
@@ -303,10 +401,17 @@
                 document.getElementById('duplicate-question').style.display = 'none';
                 endRound("否");
             });
-            // 再来一局
+            // 再来一局（彻底重置所有元素）
             document.getElementById('yes-round-button').addEventListener('click', function() {
                 document.getElementById('setup').style.display = 'block';
+                document.getElementById('progress').innerHTML = '';
+                document.getElementById('image-container').innerHTML = '';
+                document.getElementById('result-message').innerText = '';
+                document.getElementById('result-message').style.display = 'none';
                 document.getElementById('new-round-question').style.display = 'none';
+                // 清空缩略图容器，避免残留
+                document.getElementById('thumbnail-container').innerHTML = '';
+                document.getElementById('thumbnail-container').style.display = 'none';
             });
         };
     </script>
