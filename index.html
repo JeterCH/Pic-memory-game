@@ -129,16 +129,6 @@
             color: #4a5568;
             margin-bottom: 20px;
         }
-
-        @media (max-width: 768px) {
-            .memory-game {
-                grid-template-columns: repeat(3, 120px);
-            }
-            .memory-card {
-                width: 120px;
-                height: 120px;
-            }
-        }
     </style>
 </head>
 <body>
@@ -159,246 +149,195 @@
         <button class="reset-btn" id="resetBtn">重置游戏</button>
     </div>
 
-    <script>
-        // 游戏核心变量
-        const cardImages = [
-            'https://picsum.photos/seed/cat1/150/150',
-            'https://picsum.photos/seed/dog1/150/150',
-            'https://picsum.photos/seed/bird1/150/150',
-            'https://picsum.photos/seed/fish1/150/150',
-            'https://picsum.photos/seed/rabbit1/150/150',
-            'https://picsum.photos/seed/hamster1/150/150',
-            'https://picsum.photos/seed/turtle1/150/150',
-            'https://picsum.photos/seed/snake1/150/150'
-        ];
+<script>
+    const cardImages = [
+        'https://picsum.photos/seed/cat1/150/150',
+        'https://picsum.photos/seed/dog1/150/150',
+        'https://picsum.photos/seed/bird1/150/150',
+        'https://picsum.photos/seed/fish1/150/150',
+        'https://picsum.photos/seed/rabbit1/150/150',
+        'https://picsum.photos/seed/hamster1/150/150',
+        'https://picsum.photos/seed/turtle1/150/150',
+        'https://picsum.photos/seed/snake1/150/150'
+    ];
 
-        let gameBoard = document.getElementById('gameBoard');
-        let secondsDisplay = document.getElementById('seconds');
-        let movesDisplay = document.getElementById('moves');
-        let resetBtn = document.getElementById('resetBtn');
-        let loadingText = document.getElementById('loadingText');
-        
-        let cards = [];
-        let seconds = 0;
-        let moves = 0;
-        let timer = null;
-        let isGameStarted = false;
-        let hasFlippedCard = false;
-        let lockBoard = false;
-        let firstCard, secondCard;
-        
-        // 图片加载相关变量
-        let loadedImageCount = 0;
-        let totalImageCount = cardImages.length * 2; // 每张图有两张卡牌
+    let gameBoard = document.getElementById('gameBoard');
+    let secondsDisplay = document.getElementById('seconds');
+    let movesDisplay = document.getElementById('moves');
+    let resetBtn = document.getElementById('resetBtn');
+    let loadingText = document.getElementById('loadingText');
 
-        // 初始化游戏
-        function initGame() {
-            // 重置所有状态
-            resetGameState();
-            // 预加载所有图片
-            preloadAllImages().then(() => {
-                // 所有图片加载完成后渲染卡牌
-                renderCards();
-                // 启动计时
-                startTimer();
-                loadingText.textContent = "游戏就绪！";
-            });
-        }
+    let cards = [];
+    let seconds = 0;
+    let moves = 0;
+    let timer = null;
+    let isGameStarted = false;
+    let hasFlippedCard = false;
+    let lockBoard = false;
+    let firstCard, secondCard;
 
-        // 预加载所有图片
-        function preloadAllImages() {
-            const preloadPromises = [];
-            
-            // 对每张图片创建预加载Promise
-            cardImages.forEach(imgUrl => {
-                preloadPromises.push(preloadSingleImage(imgUrl));
-                // 因为每张图有两张卡牌，所以推两次
-                preloadPromises.push(preloadSingleImage(imgUrl));
-            });
+    let loadedImageCount = 0;
+    let totalImageCount = cardImages.length * 2;
 
-            // 等待所有图片加载完成
-            return Promise.all(preloadPromises);
-        }
+    // 用来保存当前这局真正使用的图片（关键修复）
+    let currentGameImages = [];
 
-        // 预加载单张图片
-        function preloadSingleImage(url) {
-            return new Promise((resolve) => {
+    function initGame() {
+        resetGameState();
+        createGameImagePairs(); // 先固定本局图片
+        preloadAllImages().then(() => {
+            renderCards();
+            startTimer();
+            loadingText.textContent = "游戏就绪！";
+        });
+    }
+
+    // ✅ 修复1：先创建固定的一对对图片，不再动态拼数组
+    function createGameImagePairs() {
+        currentGameImages = [...cardImages, ...cardImages];
+        currentGameImages = shuffleArray(currentGameImages);
+    }
+
+    // ✅ 修复2：预加载本局固定的图片
+    function preloadAllImages() {
+        return new Promise((resolve) => {
+            if (currentGameImages.length === 0) resolve();
+
+            let loaded = 0;
+            currentGameImages.forEach(url => {
                 const img = new Image();
-                img.onload = () => {
-                    loadedImageCount++;
-                    const progress = Math.floor((loadedImageCount / totalImageCount) * 100);
-                    loadingText.textContent = `加载图片中... ${progress}%`;
-                    resolve();
-                };
-                img.onerror = () => {
-                    // 图片加载失败也视为完成（避免游戏卡住）
-                    loadedImageCount++;
-                    resolve();
-                };
+                img.onload = done;
+                img.onerror = done;
                 img.src = url;
+
+                function done() {
+                    loaded++;
+                    loadingText.textContent = `加载中 ${Math.round(loaded / currentGameImages.length * 100)}%`;
+                    if (loaded === currentGameImages.length) resolve();
+                }
             });
-        }
+        });
+    }
 
-        // 渲染卡牌到页面
-        function renderCards() {
-            // 清空游戏面板
-            gameBoard.innerHTML = '';
-            
-            // 复制图片数组（每张图两张卡牌）并洗牌
-            let cardPairs = [...cardImages, ...cardImages];
-            cardPairs = shuffleArray(cardPairs);
+    // ✅ 修复3：渲染时直接用本局固定图片，不再重新洗牌
+    function renderCards() {
+        gameBoard.innerHTML = '';
+        currentGameImages.forEach((url, index) => {
+            const card = document.createElement('div');
+            card.classList.add('memory-card');
+            card.dataset.index = index;
 
-            // 创建卡牌元素
-            cardPairs.forEach((imgUrl, index) => {
-                const card = document.createElement('div');
-                card.classList.add('memory-card');
-                card.dataset.framework = index; // 用index作为标识
+            const front = document.createElement('div');
+            front.classList.add('front-face');
+            const img = document.createElement('img');
+            img.src = url; // 直接用本局固定URL，不会变
+            front.appendChild(img);
 
-                // 正面（图片）
-                const frontFace = document.createElement('div');
-                frontFace.classList.add('front-face');
-                const img = document.createElement('img');
-                img.src = imgUrl;
-                img.alt = `Memory card ${index}`;
-                frontFace.appendChild(img);
+            const back = document.createElement('div');
+            back.classList.add('back-face');
+            back.textContent = '?';
 
-                // 背面
-                const backFace = document.createElement('div');
-                backFace.classList.add('back-face');
-                backFace.textContent = "?";
+            card.appendChild(front);
+            card.appendChild(back);
+            card.addEventListener('click', flipCard);
+            gameBoard.appendChild(card);
+        });
+        cards = document.querySelectorAll('.memory-card');
+    }
 
-                // 组装卡牌
-                card.appendChild(frontFace);
-                card.appendChild(backFace);
+    function flipCard() {
+        if (lockBoard) return;
+        if (this === firstCard) return;
+        this.classList.add('flip');
 
-                // 绑定点击事件
-                card.addEventListener('click', flipCard);
-
-                // 添加到游戏面板
-                gameBoard.appendChild(card);
-            });
-
-            // 获取所有卡牌元素
-            cards = document.querySelectorAll('.memory-card');
-        }
-
-        // 洗牌函数（Fisher-Yates 算法）
-        function shuffleArray(array) {
-            let currentIndex = array.length, randomIndex;
-            while (currentIndex != 0) {
-                randomIndex = Math.floor(Math.random() * currentIndex);
-                currentIndex--;
-                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-            }
-            return array;
-        }
-
-        // 翻转卡牌逻辑
-        function flipCard() {
-            if (lockBoard) return;
-            if (this === firstCard) return;
-
-            this.classList.add('flip');
-
-            if (!hasFlippedCard) {
-                // 第一次点击
-                hasFlippedCard = true;
-                firstCard = this;
-                return;
-            }
-
-            // 第二次点击
+        if (!hasFlippedCard) {
+            hasFlippedCard = true;
+            firstCard = this;
+        } else {
             secondCard = this;
             moves++;
             movesDisplay.textContent = moves;
-
-            // 检查是否匹配
-            checkForMatch();
+            checkMatch();
         }
+    }
 
-        // 检查卡牌是否匹配
-        function checkForMatch() {
-            const isMatch = firstCard.querySelector('img').src === secondCard.querySelector('img').src;
-            isMatch ? disableCards() : unflipCards();
-        }
+    // ✅ 修复4：匹配判断用 src 绝对相等
+    function checkMatch() {
+        const match = firstCard.querySelector('img').src === secondCard.querySelector('img').src;
+        match ? disableCards() : unflipCards();
+    }
 
-        // 匹配成功：禁用卡牌点击
-        function disableCards() {
-            firstCard.removeEventListener('click', flipCard);
-            secondCard.removeEventListener('click', flipCard);
+    function disableCards() {
+        firstCard.removeEventListener('click', flipCard);
+        secondCard.removeEventListener('click', flipCard);
+        resetBoard();
+        checkGameOver();
+    }
+
+    function unflipCards() {
+        lockBoard = true;
+        setTimeout(() => {
+            firstCard.classList.remove('flip');
+            secondCard.classList.remove('flip');
             resetBoard();
+        }, 1000);
+    }
 
-            // 检查游戏是否结束
-            checkGameOver();
-        }
+    function resetBoard() {
+        [hasFlippedCard, lockBoard] = [false, false];
+        [firstCard, secondCard] = [null, null];
+    }
 
-        // 匹配失败：翻回卡牌
-        function unflipCards() {
-            lockBoard = true;
-            setTimeout(() => {
-                firstCard.classList.remove('flip');
-                secondCard.classList.remove('flip');
-                resetBoard();
-            }, 1000);
-        }
-
-        // 重置面板状态
-        function resetBoard() {
-            [hasFlippedCard, lockBoard] = [false, false];
-            [firstCard, secondCard] = [null, null];
-        }
-
-        // 启动计时器（所有图片加载完成后执行）
-        function startTimer() {
-            if (timer) clearInterval(timer);
-            seconds = 0;
-            secondsDisplay.textContent = seconds;
-            isGameStarted = true;
-
-            timer = setInterval(() => {
-                if (isGameStarted) {
-                    seconds++;
-                    secondsDisplay.textContent = seconds;
-                }
-            }, 1000);
-        }
-
-        // 重置游戏状态
-        function resetGameState() {
-            // 停止计时器
-            clearInterval(timer);
-            // 重置变量
-            seconds = 0;
-            moves = 0;
-            loadedImageCount = 0;
-            isGameStarted = false;
-            hasFlippedCard = false;
-            lockBoard = false;
-            firstCard = null;
-            secondCard = null;
-            // 更新显示
-            secondsDisplay.textContent = 0;
-            movesDisplay.textContent = 0;
-            loadingText.textContent = "加载图片中...";
-        }
-
-        // 检查游戏是否结束
-        function checkGameOver() {
-            const flippedCards = document.querySelectorAll('.flip');
-            if (flippedCards.length === cards.length) {
-                isGameStarted = false;
-                clearInterval(timer);
-                setTimeout(() => {
-                    alert(`恭喜！你完成了游戏！\n用时：${seconds} 秒\n步数：${moves} 步`);
-                }, 500);
+    function startTimer() {
+        clearInterval(timer);
+        seconds = 0;
+        secondsDisplay.textContent = 0;
+        isGameStarted = true;
+        timer = setInterval(() => {
+            if (isGameStarted) {
+                seconds++;
+                secondsDisplay.textContent = seconds;
             }
+        }, 1000);
+    }
+
+    function resetGameState() {
+        clearInterval(timer);
+        seconds = 0;
+        moves = 0;
+        isGameStarted = false;
+        hasFlippedCard = false;
+        lockBoard = false;
+        firstCard = null;
+        secondCard = null;
+        secondsDisplay.textContent = 0;
+        movesDisplay.textContent = 0;
+        loadingText.textContent = "加载图片中...";
+    }
+
+    function checkGameOver() {
+        const total = cards.length;
+        const flipped = document.querySelectorAll('.flip').length;
+        if (flipped === total) {
+            isGameStarted = false;
+            clearInterval(timer);
+            setTimeout(() => {
+                alert(`成功！\n用时：${seconds}秒\n步数：${moves}步`);
+            }, 500);
         }
+    }
 
-        // 绑定重置按钮事件
-        resetBtn.addEventListener('click', initGame);
+    function shuffleArray(arr) {
+        let a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
 
-        // 页面加载完成后初始化游戏
-        document.addEventListener('DOMContentLoaded', initGame);
-    </script>
+    resetBtn.addEventListener('click', initGame);
+    window.addEventListener('DOMContentLoaded', initGame);
+</script>
 </body>
 </html>
