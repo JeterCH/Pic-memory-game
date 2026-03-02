@@ -13,21 +13,18 @@
         #scoreboard table { width: 100%; border-collapse: collapse; font-size: 36px; }
         #scoreboard th, #scoreboard td { border: 1px solid #ccc; padding: 10px; text-align: center; }
 
-        /* 单独放大复选框 */
         input[type="checkbox"] {
             width: 60px;
             height: 60px;
             margin-right: 20px;
         }
 
-        /* 放大是否有重复的按钮并加大间距 */
         #duplicate-question button {
             font-size: 72px;
             padding: 30px 60px;
             margin: 40px;
         }
 
-        /* 缩略图展示区 */
         #thumbnail-container {
             margin-top: 20px;
         }
@@ -36,11 +33,15 @@
             margin: 10px;
             display: inline-block;
         }
+
+        #progress {
+            margin-top: 20px;
+            font-size: 60px;
+        }
     </style>
 </head>
 <body>
     <h1>请记忆图片，并回答是否有重复。</h1>
-    <!-- 设置表单 -->
     <div id="setup">
         <label>修改显示图片数量：</label>
         <select id="num-pics">
@@ -71,6 +72,9 @@
         <br><br>
         <button id="start-button">开始游戏</button>
     </div>
+
+    <!-- 进度提示 -->
+    <div id="progress"></div>
 
     <!-- 图片展示 -->
     <div id="image-container"></div>
@@ -121,6 +125,7 @@
         let allowConsecutiveDuplicate = true;
 
         function startGame() {
+            document.getElementById('progress').innerHTML = '';
             document.getElementById('image-container').innerHTML = '';
             document.getElementById('result-message').innerText = '';
             document.getElementById('result-message').style.display = 'none';
@@ -137,7 +142,6 @@
             duplicatePositions = [];
             chosenImages = [];
 
-            // 生成不重复的图片
             for (let i = 0; i < numPics; i++) {
                 let newImage;
                 do {
@@ -147,7 +151,6 @@
                 chosenImages.push(newImage);
             }
 
-            // 如果需要重复，强制制造
             if (hasDuplicate) {
                 let duplicateIndex = Math.floor(Math.random() * (numPics - 1));
                 let replaceIndex = Math.floor(Math.random() * numPics);
@@ -166,8 +169,11 @@
 
         function showImage() {
             if (currentIndex < chosenImages.length) {
+                // 更新进度提示
+                document.getElementById('progress').innerHTML = 
+                    `正在显示第 ${currentIndex + 1} / ${chosenImages.length} 张`;
+
                 document.getElementById('image-container').innerHTML = `
-                    <h3 style="font-size:60px;">正在显示第 ${currentIndex + 1} / ${chosenImages.length} 张</h3>
                     <img src="${chosenImages[currentIndex]}">
                 `;
                 setTimeout(() => {
@@ -192,7 +198,6 @@
             document.getElementById('result-message').style.display = 'block';
             document.getElementById('new-round-question').style.display = 'block';
 
-            // 显示缩略图
             let thumbContainer = document.getElementById('thumbnail-container');
             thumbContainer.innerHTML = "<h3>本轮所有图片缩略图：</h3>";
             chosenImages.forEach((img, idx) => {
@@ -222,6 +227,7 @@
             document.getElementById('no-button').addEventListener('click', function() {
                 document.getElementById('duplicate-question').style.display = 'none';
                 endRound("否");
+
             });
             document.getElementById('yes-round-button').addEventListener('click', function() {
                 document.getElementById('setup').style.display = 'block';
