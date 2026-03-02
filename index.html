@@ -222,16 +222,18 @@
         }
 
         window.onload = function() {
-            document.getElementById('start-button').addEventListener('click', startGame);
             document.getElementById('yes-button').addEventListener('click', function() {
-                document.getElementById('duplicate-question').style.display = 'none';
-                endRound("是");
+            document.getElementById('duplicate-question').style.display = 'none';
+            document.getElementById('progress').innerHTML = ''; // 新增：隐藏进度提示
+            endRound("是");
             });
-            document.getElementById('no-button').addEventListener('click', function() {
-                document.getElementById('duplicate-question').style.display = 'none';
-                endRound("否");
 
-           });
+            document.getElementById('no-button').addEventListener('click', function() {
+            document.getElementById('duplicate-question').style.display = 'none';
+            document.getElementById('progress').innerHTML = ''; // 新增：隐藏进度提示
+            endRound("否");
+            });
+
            document.getElementById('yes-round-button').addEventListener('click', function() {
            document.getElementById('setup').style.display = 'block';
            document.getElementById('new-round-question').style.display = 'none';
