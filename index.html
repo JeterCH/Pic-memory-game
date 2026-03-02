@@ -38,6 +38,10 @@
             margin-top: 20px;
             font-size: 60px;
         }
+
+        #result-message {
+            font-size: 72px; 
+        }
     </style>
 </head>
 <body>
@@ -190,6 +194,8 @@
         }
 
         function endRound(answer) {
+            // 隐藏进度提示 
+            document.getElementById('progress').innerHTML = '';
             let correct = hasDuplicate ? "是" : "否";
             let message = "你的回答：" + answer + "。正确答案：" + correct;
             if (hasDuplicate) {
@@ -224,13 +230,11 @@
         window.onload = function() {
             document.getElementById('yes-button').addEventListener('click', function() {
             document.getElementById('duplicate-question').style.display = 'none';
-            document.getElementById('progress').innerHTML = ''; // 新增：隐藏进度提示
             endRound("是");
             });
 
             document.getElementById('no-button').addEventListener('click', function() {
             document.getElementById('duplicate-question').style.display = 'none';
-            document.getElementById('progress').innerHTML = ''; // 新增：隐藏进度提示
             endRound("否");
             });
 
