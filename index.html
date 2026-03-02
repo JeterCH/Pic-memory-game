@@ -56,6 +56,15 @@
             <option value="10">10</option>
         </select>
         <br><br>
+        <label>修改每张图片显示几秒：</label>
+        <select id="seconds">
+            <option value="1">1 秒</option>
+            <option value="2">2 秒</option>
+            <option value="3" selected>3 秒</option>
+            <option value="4">4 秒</option>
+            <option value="5">5 秒</option>
+        </select>
+        <br><br>
         <label>
             <input type="checkbox" id="allow-consecutive" checked>
             允许出现连续重复
@@ -116,7 +125,6 @@
         let allowConsecutiveDuplicate = true;
 
         function startGame() {
-            // 初始化界面元素
             document.getElementById('scoreboard').style.display = 'none';
             document.getElementById('progress').innerHTML = '';
             document.getElementById('image-container').innerHTML = '';
@@ -127,34 +135,30 @@
             document.getElementById('thumbnail-container').innerHTML = '';
             document.getElementById('thumbnail-container').style.display = 'none';
 
-            // 获取用户配置
             let numPics = parseInt(document.getElementById('num-pics').value);
             secondsPerPic = parseInt(document.getElementById('seconds').value);
             allowConsecutiveDuplicate = document.getElementById('allow-consecutive').checked;
 
-            // 重置本轮状态
             hasDuplicate = Math.random() < 0.5;
             duplicatePositions = [];
             chosenImages = [];
 
-            // 修复核心：用Set生成唯一图片ID，避免死循环
+            // 修复原死循环问题：先生成唯一图片，再处理重复规则
             const imageIds = new Set();
-            // 先生成足够的唯一ID（数量=图片数）
             while (imageIds.size < numPics) {
                 imageIds.add(Math.floor(Math.random() * 10000));
             }
             const uniqueIds = Array.from(imageIds);
 
-            // 生成基础图片列表（保证所有图片唯一）
+            // 生成基础唯一图片列表
             for (let i = 0; i < numPics; i++) {
                 chosenImages.push(`https://picsum.photos/800?random=${uniqueIds[i]}`);
             }
 
-            // 处理「不允许连续重复」的规则（仅检查相邻图片）
+            // 处理「不允许连续重复」规则
             if (!allowConsecutiveDuplicate) {
                 for (let i = 1; i < chosenImages.length; i++) {
                     if (chosenImages[i] === chosenImages[i-1]) {
-                        // 若连续重复，替换为新的唯一ID
                         let newId;
                         do {
                             newId = Math.floor(Math.random() * 10000);
@@ -165,7 +169,7 @@
                 }
             }
 
-            // 随机添加重复图片（保留原有逻辑）
+            // 随机添加重复图片
             if (hasDuplicate) {
                 let duplicateIndex = Math.floor(Math.random() * (numPics - 1));
                 let replaceIndex = Math.floor(Math.random() * numPics);
@@ -176,7 +180,6 @@
                 duplicatePositions.push(duplicateIndex + 1, replaceIndex + 1);
             }
 
-            // 启动图片展示流程
             currentIndex = 0;
             round++;
             document.getElementById('setup').style.display = 'none';
@@ -189,40 +192,35 @@
                 document.getElementById('progress').innerHTML = 
                     `正在显示第 ${currentIndex + 1} / ${chosenImages.length} 张`;
 
-                // 图片加载优化：先显示加载提示，图片加载完成后再展示
                 document.getElementById('image-container').innerHTML = `
-                    <div style="font-size: 48px;">加载中...</div>
-                    <img src="${chosenImages[currentIndex]}" onload="this.style.display='block';" style="display:none;">
+                    <img src="${chosenImages[currentIndex]}">
                 `;
-                
-                // 图片显示计时逻辑
                 setTimeout(() => {
                     document.getElementById('image-container').innerHTML = '';
                     setTimeout(() => {
                         currentIndex++;
                         showImage();
-                    }, 1000); // 图片切换间隔1秒
-                }, secondsPerPic * 1000); // 单张图片显示时长
+                    }, 1000);
+                }, secondsPerPic * 1000);
             } else {
-                // 所有图片展示完毕，弹出问题
                 document.getElementById('duplicate-question').style.display = 'block';
             }
         }
 
         function endRound(answer) {
-            // 计算正确答案并生成提示语
+            // 核心新增：隐藏进度提示（清空内容+隐藏，二选一或都做）
+            document.getElementById('progress').innerHTML = ''; // 清空文字
+            document.getElementById('progress').style.display = 'none'; // 隐藏元素
+
             let correct = hasDuplicate ? "是" : "否";
-            let message = `你的回答：${answer}。正确答案：${correct}`;
+            let message = "你的回答：" + answer + "。正确答案：" + correct;
             if (hasDuplicate) {
-                message += `。重复位置：${duplicatePositions.join(" 和 ")}`;
+                message += "。重复位置：" + duplicatePositions.join(" 和 ");
             }
-            
-            // 更新结果展示
             document.getElementById('result-message').innerText = message;
             document.getElementById('result-message').style.display = 'block';
             document.getElementById('new-round-question').style.display = 'block';
 
-            // 生成缩略图
             let thumbContainer = document.getElementById('thumbnail-container');
             thumbContainer.innerHTML = "<h3>本轮所有图片缩略图：</h3>";
             chosenImages.forEach((img, idx) => {
@@ -230,7 +228,6 @@
             });
             thumbContainer.style.display = 'block';
 
-            // 更新记分板
             let sb = document.getElementById('scoreboard-body');
             let row = document.createElement('tr');
             row.innerHTML = `
@@ -245,48 +242,28 @@
             document.getElementById('scoreboard').style.display = 'block';
         }
 
-        // 页面加载完成后绑定事件（增加容错）
         window.onload = function() {
-            // 绑定开始游戏按钮
-            const startBtn = document.getElementById('start-button');
-            if (startBtn) {
-                startBtn.addEventListener('click', startGame);
-            } else {
-                console.error('未找到开始游戏按钮，请检查ID是否正确');
-            }
-
-            // 绑定「是」按钮（回答重复问题）
-            const yesBtn = document.getElementById('yes-button');
-            if (yesBtn) {
-                yesBtn.addEventListener('click', function() {
-                    document.getElementById('duplicate-question').style.display = 'none';
-                    endRound("是");
-                });
-            }
-
-            // 绑定「否」按钮（回答重复问题）
-            const noBtn = document.getElementById('no-button');
-            if (noBtn) {
-                noBtn.addEventListener('click', function() {
-                    document.getElementById('duplicate-question').style.display = 'none';
-                    endRound("否");
-                });
-            }
-
-            // 绑定「再来一局」按钮
-            const yesRoundBtn = document.getElementById('yes-round-button');
-            if (yesRoundBtn) {
-                yesRoundBtn.addEventListener('click', function() {
-                    document.getElementById('setup').style.display = 'block';
-                    document.getElementById('new-round-question').style.display = 'none';
-                    document.getElementById('duplicate-question').style.display = 'none';
-                    document.getElementById('image-container').innerHTML = '';
-                    document.getElementById('result-message').innerText = '';
-                    document.getElementById('result-message').style.display = 'none';
-                    document.getElementById('thumbnail-container').innerHTML = '';
-                    document.getElementById('thumbnail-container').style.display = 'none';
-                });
-            }
+            document.getElementById('start-button').addEventListener('click', startGame);
+            document.getElementById('yes-button').addEventListener('click', function() {
+                document.getElementById('duplicate-question').style.display = 'none';
+                endRound("是");
+            });
+            document.getElementById('no-button').addEventListener('click', function() {
+                document.getElementById('duplicate-question').style.display = 'none';
+                endRound("否");
+            });
+           document.getElementById('yes-round-button').addEventListener('click', function() {
+                document.getElementById('setup').style.display = 'block';
+                document.getElementById('new-round-question').style.display = 'none';
+                document.getElementById('duplicate-question').style.display = 'none';
+                document.getElementById('image-container').innerHTML = '';
+                document.getElementById('result-message').innerText = '';
+                document.getElementById('result-message').style.display = 'none';
+                document.getElementById('thumbnail-container').innerHTML = '';
+                document.getElementById('thumbnail-container').style.display = 'none';
+                // 再来一局时恢复progress显示（可选）
+                document.getElementById('progress').style.display = 'block';
+            });
         };
     </script>
 </body>
