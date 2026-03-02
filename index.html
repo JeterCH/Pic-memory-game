@@ -1,343 +1,270 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pic Memory Game</title>
+    <title>图片记忆游戏byJeter</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
+        body { text-align: center; font-family: Arial, sans-serif; font-size: 48px; }
+        h1 { font-size: 72px; }
+        label { font-size: 48px; }
+        button { font-size: 48px; padding: 20px 40px; margin: 10px; }
+        select { font-size: 48px; padding: 10px; }
+        img { max-width: 800px; display: block; margin: 10px auto; }
+        #scoreboard { margin-top: 20px; width: 95%; margin-left: auto; margin-right: auto; border: 1px solid #ccc; }
+        #scoreboard table { width: 100%; border-collapse: collapse; font-size: 36px; }
+        #scoreboard th, #scoreboard td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+
+        input[type="checkbox"] {
+            width: 60px;
+            height: 60px;
+            margin-right: 20px;
         }
 
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f0f4f8;
-            padding: 20px;
-            min-height: 100vh;
+        #duplicate-question button {
+            font-size: 72px;
+            padding: 30px 60px;
+            margin: 40px;
         }
 
-        .game-title {
-            font-size: 2.5rem;
-            color: #2d3748;
-            margin-bottom: 20px;
+        #thumbnail-container {
+            margin-top: 20px;
         }
-
-        .game-stats {
-            display: flex;
-            gap: 30px;
-            margin-bottom: 20px;
-            font-size: 1.2rem;
-            color: #4a5568;
-        }
-
-        .stats-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .stats-label {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .memory-game {
-            display: grid;
-            grid-template-columns: repeat(4, 150px);
-            gap: 15px;
-            perspective: 1000px;
-        }
-
-        .memory-card {
-            height: 150px;
+        #thumbnail-container img {
             width: 150px;
-            position: relative;
-            transform-style: preserve-3d;
-            transition: transform 0.5s;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border-radius: 8px;
+            margin: 10px;
+            display: inline-block;
         }
 
-        .memory-card.flip {
-            transform: rotateY(180deg);
-        }
-
-        .memory-card:active {
-            transform: scale(0.97);
-            transition: transform 0.2s;
-        }
-
-        .front-face, .back-face {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            padding: 20px;
-            backface-visibility: hidden;
-            border-radius: 8px;
-        }
-
-        .front-face {
-            transform: rotateY(180deg);
-            background-color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .front-face img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: cover;
-        }
-
-        .back-face {
-            background-color: #4299e1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 2rem;
-        }
-
-        .game-controls {
-            margin-top: 30px;
-        }
-
-        .reset-btn {
-            padding: 10px 25px;
-            font-size: 1rem;
-            background-color: #38b2ac;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .reset-btn:hover {
-            background-color: #319795;
-        }
-
-        .loading-text {
-            font-size: 1.2rem;
-            color: #4a5568;
-            margin-bottom: 20px;
+        #progress {
+            margin-top: 20px;
+            font-size: 60px;
         }
     </style>
 </head>
 <body>
-    <h1 class="game-title">Memory Game</h1>
-    <div class="loading-text" id="loadingText">加载图片中...</div>
-    <div class="game-stats">
-        <div class="stats-item">
-            <span class="stats-label">时间</span>
-            <span id="seconds">0</span> 秒
-        </div>
-        <div class="stats-item">
-            <span class="stats-label">步数</span>
-            <span id="moves">0</span>
-        </div>
+    <h1>请看图后回答其中是否有重复</h1>
+    <div id="setup">
+        <label>修改显示图片数量：</label>
+        <select id="num-pics">
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+        </select>
+        <br><br>
+        <label>修改每张图片显示几秒：</label>
+        <select id="seconds">
+            <option value="1">1 秒</option>
+            <option value="2">2 秒</option>
+            <option value="3" selected>3 秒</option>
+            <option value="4">4 秒</option>
+            <option value="5">5 秒</option>
+        </select>
+        <br><br>
+        <label>
+            <input type="checkbox" id="allow-consecutive" checked>
+            允许出现连续重复
+        </label>
+        <br><br>
+        <button id="start-button">开始游戏</button>
     </div>
-    <div class="memory-game" id="gameBoard"></div>
-    <div class="game-controls">
-        <button class="reset-btn" id="resetBtn">重置游戏</button>
+
+    <!-- 进度提示 -->
+    <div id="progress"></div>
+
+    <!-- 图片展示 -->
+    <div id="image-container"></div>
+
+    <!-- 重复问题 -->
+    <div id="duplicate-question" style="display:none;">
+        <p>是否有重复的图片？</p>
+        <button id="yes-button">是</button>
+        <button id="no-button">否</button>
     </div>
 
-<script>
-    const cardImages = [
-        'https://picsum.photos/seed/cat1/150/150',
-        'https://picsum.photos/seed/dog1/150/150',
-        'https://picsum.photos/seed/bird1/150/150',
-        'https://picsum.photos/seed/fish1/150/150',
-        'https://picsum.photos/seed/rabbit1/150/150',
-        'https://picsum.photos/seed/hamster1/150/150',
-        'https://picsum.photos/seed/turtle1/150/150',
-        'https://picsum.photos/seed/snake1/150/150'
-    ];
+    <!-- 结果 -->
+    <div id="result-message" style="display:none;"></div>
 
-    let gameBoard = document.getElementById('gameBoard');
-    let secondsDisplay = document.getElementById('seconds');
-    let movesDisplay = document.getElementById('moves');
-    let resetBtn = document.getElementById('resetBtn');
-    let loadingText = document.getElementById('loadingText');
+    <!-- 缩略图展示 -->
+    <div id="thumbnail-container" style="display:none;"></div>
 
-    let cards = [];
-    let seconds = 0;
-    let moves = 0;
-    let timer = null;
-    let isGameStarted = false;
-    let hasFlippedCard = false;
-    let lockBoard = false;
-    let firstCard, secondCard;
+    <!-- 新一局 -->
+    <div id="new-round-question" style="display:none;">
+        <button id="yes-round-button">再来一局</button>
+    </div>
 
-    let loadedImageCount = 0;
-    let totalImageCount = cardImages.length * 2;
+    <!-- 记分板 -->
+    <div id="scoreboard">
+        <h2>记分板</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>局数</th>
+                    <th>图片数量</th>
+                    <th>每张秒数</th>
+                    <th>玩家作答</th>
+                    <th>正确答案</th>
+                    <th>重复位置</th>
+                </tr>
+            </thead>
+            <tbody id="scoreboard-body"></tbody>
+        </table>
+    </div>
 
-    // 用来保存当前这局真正使用的图片（关键修复）
-    let currentGameImages = [];
+    <script>
+        let chosenImages = [];
+        let currentIndex = 0;
+        let secondsPerPic = 2;
+        let hasDuplicate = false;
+        let round = 0;
+        let duplicatePositions = [];
+        let allowConsecutiveDuplicate = true;
 
-    function initGame() {
-        resetGameState();
-        createGameImagePairs(); // 先固定本局图片
-        preloadAllImages().then(() => {
-            renderCards();
-            startTimer();
-            loadingText.textContent = "游戏就绪！";
-        });
-    }
+        function startGame() {
+            document.getElementById('scoreboard').style.display = 'none';
+            document.getElementById('progress').innerHTML = '';
+            document.getElementById('image-container').innerHTML = '';
+            document.getElementById('result-message').innerText = '';
+            document.getElementById('result-message').style.display = 'none';
+            document.getElementById('duplicate-question').style.display = 'none';
+            document.getElementById('new-round-question').style.display = 'none';
+            document.getElementById('thumbnail-container').innerHTML = '';
+            document.getElementById('thumbnail-container').style.display = 'none';
 
-    // ✅ 修复1：先创建固定的一对对图片，不再动态拼数组
-    function createGameImagePairs() {
-        currentGameImages = [...cardImages, ...cardImages];
-        currentGameImages = shuffleArray(currentGameImages);
-    }
+            let numPics = parseInt(document.getElementById('num-pics').value);
+            secondsPerPic = parseInt(document.getElementById('seconds').value);
+            allowConsecutiveDuplicate = document.getElementById('allow-consecutive').checked;
 
-    // ✅ 修复2：预加载本局固定的图片
-    function preloadAllImages() {
-        return new Promise((resolve) => {
-            if (currentGameImages.length === 0) resolve();
+            hasDuplicate = Math.random() < 0.5;
+            duplicatePositions = [];
+            chosenImages = [];
 
-            let loaded = 0;
-            currentGameImages.forEach(url => {
-                const img = new Image();
-                img.onload = done;
-                img.onerror = done;
-                img.src = url;
-
-                function done() {
-                    loaded++;
-                    loadingText.textContent = `加载中 ${Math.round(loaded / currentGameImages.length * 100)}%`;
-                    if (loaded === currentGameImages.length) resolve();
-                }
-            });
-        });
-    }
-
-    // ✅ 修复3：渲染时直接用本局固定图片，不再重新洗牌
-    function renderCards() {
-        gameBoard.innerHTML = '';
-        currentGameImages.forEach((url, index) => {
-            const card = document.createElement('div');
-            card.classList.add('memory-card');
-            card.dataset.index = index;
-
-            const front = document.createElement('div');
-            front.classList.add('front-face');
-            const img = document.createElement('img');
-            img.src = url; // 直接用本局固定URL，不会变
-            front.appendChild(img);
-
-            const back = document.createElement('div');
-            back.classList.add('back-face');
-            back.textContent = '?';
-
-            card.appendChild(front);
-            card.appendChild(back);
-            card.addEventListener('click', flipCard);
-            gameBoard.appendChild(card);
-        });
-        cards = document.querySelectorAll('.memory-card');
-    }
-
-    function flipCard() {
-        if (lockBoard) return;
-        if (this === firstCard) return;
-        this.classList.add('flip');
-
-        if (!hasFlippedCard) {
-            hasFlippedCard = true;
-            firstCard = this;
-        } else {
-            secondCard = this;
-            moves++;
-            movesDisplay.textContent = moves;
-            checkMatch();
-        }
-    }
-
-    // ✅ 修复4：匹配判断用 src 绝对相等
-    function checkMatch() {
-        const match = firstCard.querySelector('img').src === secondCard.querySelector('img').src;
-        match ? disableCards() : unflipCards();
-    }
-
-    function disableCards() {
-        firstCard.removeEventListener('click', flipCard);
-        secondCard.removeEventListener('click', flipCard);
-        resetBoard();
-        checkGameOver();
-    }
-
-    function unflipCards() {
-        lockBoard = true;
-        setTimeout(() => {
-            firstCard.classList.remove('flip');
-            secondCard.classList.remove('flip');
-            resetBoard();
-        }, 1000);
-    }
-
-    function resetBoard() {
-        [hasFlippedCard, lockBoard] = [false, false];
-        [firstCard, secondCard] = [null, null];
-    }
-
-    function startTimer() {
-        clearInterval(timer);
-        seconds = 0;
-        secondsDisplay.textContent = 0;
-        isGameStarted = true;
-        timer = setInterval(() => {
-            if (isGameStarted) {
-                seconds++;
-                secondsDisplay.textContent = seconds;
+            // 修复原死循环问题：先生成唯一图片，再处理重复规则
+            const imageIds = new Set();
+            while (imageIds.size < numPics) {
+                imageIds.add(Math.floor(Math.random() * 10000));
             }
-        }, 1000);
-    }
+            const uniqueIds = Array.from(imageIds);
 
-    function resetGameState() {
-        clearInterval(timer);
-        seconds = 0;
-        moves = 0;
-        isGameStarted = false;
-        hasFlippedCard = false;
-        lockBoard = false;
-        firstCard = null;
-        secondCard = null;
-        secondsDisplay.textContent = 0;
-        movesDisplay.textContent = 0;
-        loadingText.textContent = "加载图片中...";
-    }
+            // 生成基础唯一图片列表
+            for (let i = 0; i < numPics; i++) {
+                chosenImages.push(`https://picsum.photos/800?random=${uniqueIds[i]}`);
+            }
 
-    function checkGameOver() {
-        const total = cards.length;
-        const flipped = document.querySelectorAll('.flip').length;
-        if (flipped === total) {
-            isGameStarted = false;
-            clearInterval(timer);
-            setTimeout(() => {
-                alert(`成功！\n用时：${seconds}秒\n步数：${moves}步`);
-            }, 500);
+            // 处理「不允许连续重复」规则
+            if (!allowConsecutiveDuplicate) {
+                for (let i = 1; i < chosenImages.length; i++) {
+                    if (chosenImages[i] === chosenImages[i-1]) {
+                        let newId;
+                        do {
+                            newId = Math.floor(Math.random() * 10000);
+                        } while (imageIds.has(newId));
+                        imageIds.add(newId);
+                        chosenImages[i] = `https://picsum.photos/800?random=${newId}`;
+                    }
+                }
+            }
+
+            // 随机添加重复图片
+            if (hasDuplicate) {
+                let duplicateIndex = Math.floor(Math.random() * (numPics - 1));
+                let replaceIndex = Math.floor(Math.random() * numPics);
+                while (replaceIndex === duplicateIndex) {
+                    replaceIndex = Math.floor(Math.random() * numPics);
+                }
+                chosenImages[replaceIndex] = chosenImages[duplicateIndex];
+                duplicatePositions.push(duplicateIndex + 1, replaceIndex + 1);
+            }
+
+            currentIndex = 0;
+            round++;
+            document.getElementById('setup').style.display = 'none';
+            showImage();
         }
-    }
 
-    function shuffleArray(arr) {
-        let a = [...arr];
-        for (let i = a.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [a[i], a[j]] = [a[j], a[i]];
+        function showImage() {
+            if (currentIndex < chosenImages.length) {
+                // 更新进度提示
+                document.getElementById('progress').innerHTML = 
+                    `正在显示第 ${currentIndex + 1} / ${chosenImages.length} 张`;
+
+                document.getElementById('image-container').innerHTML = `
+                    <img src="${chosenImages[currentIndex]}">
+                `;
+                setTimeout(() => {
+                    document.getElementById('image-container').innerHTML = '';
+                    setTimeout(() => {
+                        currentIndex++;
+                        showImage();
+                    }, 1000);
+                }, secondsPerPic * 1000);
+            } else {
+                document.getElementById('duplicate-question').style.display = 'block';
+            }
         }
-        return a;
-    }
 
-    resetBtn.addEventListener('click', initGame);
-    window.addEventListener('DOMContentLoaded', initGame);
-</script>
+        function endRound(answer) {
+            // 核心新增：隐藏进度提示（清空内容+隐藏，二选一或都做）
+            document.getElementById('progress').innerHTML = ''; // 清空文字
+            document.getElementById('progress').style.display = 'none'; // 隐藏元素
+
+            let correct = hasDuplicate ? "是" : "否";
+            let message = "你的回答：" + answer + "。正确答案：" + correct;
+            if (hasDuplicate) {
+                message += "。重复位置：" + duplicatePositions.join(" 和 ");
+            }
+            document.getElementById('result-message').innerText = message;
+            document.getElementById('result-message').style.display = 'block';
+            document.getElementById('new-round-question').style.display = 'block';
+
+            let thumbContainer = document.getElementById('thumbnail-container');
+            thumbContainer.innerHTML = "<h3>本轮所有图片缩略图：</h3>";
+            chosenImages.forEach((img, idx) => {
+                thumbContainer.innerHTML += `<img src="${img}" alt="第${idx+1}张">`;
+            });
+            thumbContainer.style.display = 'block';
+
+            let sb = document.getElementById('scoreboard-body');
+            let row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${round}</td>
+                <td>${chosenImages.length}</td>
+                <td>${secondsPerPic}</td>
+                <td>${answer}</td>
+                <td>${correct}</td>
+                <td>${hasDuplicate ? duplicatePositions.join(" 和 ") : "-"}</td>
+            `;
+            sb.appendChild(row);
+            document.getElementById('scoreboard').style.display = 'block';
+        }
+
+        window.onload = function() {
+            document.getElementById('start-button').addEventListener('click', startGame);
+            document.getElementById('yes-button').addEventListener('click', function() {
+                document.getElementById('duplicate-question').style.display = 'none';
+                endRound("是");
+            });
+            document.getElementById('no-button').addEventListener('click', function() {
+                document.getElementById('duplicate-question').style.display = 'none';
+                endRound("否");
+            });
+           document.getElementById('yes-round-button').addEventListener('click', function() {
+                document.getElementById('setup').style.display = 'block';
+                document.getElementById('new-round-question').style.display = 'none';
+                document.getElementById('duplicate-question').style.display = 'none';
+                document.getElementById('image-container').innerHTML = '';
+                document.getElementById('result-message').innerText = '';
+                document.getElementById('result-message').style.display = 'none';
+                document.getElementById('thumbnail-container').innerHTML = '';
+                document.getElementById('thumbnail-container').style.display = 'none';
+                // 再来一局时恢复progress显示（可选）
+                document.getElementById('progress').style.display = 'block';
+            });
+        };
+    </script>
 </body>
 </html>
