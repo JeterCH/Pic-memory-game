@@ -38,10 +38,18 @@
             margin-top: 20px;
             font-size: 60px;
         }
+
+        /* 关键：让结果文字支持换行符，分行显示 */
+        #result-message {
+            display:none;
+            white-space: pre-line;
+            margin-top: 20px;
+            font-size: 48px;
+        }
     </style>
 </head>
 <body>
-    <h1>请看图后回答其中是否有重复</h1>
+    <h1>请记忆图片，并回答是否有重复。</h1>
     <div id="setup">
         <label>修改显示图片数量：</label>
         <select id="num-pics">
@@ -98,7 +106,7 @@
     </div>
 
     <!-- 记分板 -->
-    <div id="scoreboard">
+    <div id="scoreboard" style="display:none;">
         <h2>记分板</h2>
         <table>
             <thead>
@@ -116,7 +124,7 @@
     </div>
 
     <script>
-        let chosenImages = [];
+        let chosenImages = []; // 存储图片的blob URL，确保图片一致性
         let currentIndex = 0;
         let secondsPerPic = 2;
         let hasDuplicate = false;
@@ -124,8 +132,39 @@
         let duplicatePositions = [];
         let allowConsecutiveDuplicate = true;
 
-        function startGame() {
-            document.getElementById('scoreboard').style.display = 'none';
+        // 预加载图片并返回blob URL（核心：避免picsum随机返回不同图片）
+        async function preloadImage() {
+            try {
+                const randomNum = Math.floor(Math.random() * 10000);
+                const imgUrl = `https://picsum.photos/800/600?random=${randomNum}`;
+                const response = await fetch(imgUrl);
+                const blob = await response.blob();
+                return URL.createObjectURL(blob);
+            } catch (error) {
+                console.error("图片加载失败：", error);
+                // 备用图片（防止加载失败）
+                return `https://picsum.photos/800/600?random=9999`;
+            }
+        }
+
+        // 生成不重复的图片（排除连续重复/已存在）
+        async function generateUniqueImages(numPics) {
+            const images = [];
+            while (images.length < numPics) {
+                const imgBlobUrl = await preloadImage();
+                // 检查连续重复（禁用时）或已存在
+                const isConsecutiveDuplicate = !allowConsecutiveDuplicate && images.length > 0 && imgBlobUrl === images[images.length - 1];
+                const isDuplicate = images.includes(imgBlobUrl);
+                if (!isConsecutiveDuplicate && !isDuplicate) {
+                    images.push(imgBlobUrl);
+                }
+            }
+            return images;
+        }
+
+        async function startGame() {
+            // 重置所有界面元素
+            document.getElementById('setup').style.display = 'none';
             document.getElementById('progress').innerHTML = '';
             document.getElementById('image-container').innerHTML = '';
             document.getElementById('result-message').innerText = '';
@@ -134,44 +173,21 @@
             document.getElementById('new-round-question').style.display = 'none';
             document.getElementById('thumbnail-container').innerHTML = '';
             document.getElementById('thumbnail-container').style.display = 'none';
+            document.getElementById('scoreboard').style.display = 'none';
 
-            let numPics = parseInt(document.getElementById('num-pics').value);
+            // 获取用户设置
+            const numPics = parseInt(document.getElementById('num-pics').value);
             secondsPerPic = parseInt(document.getElementById('seconds').value);
             allowConsecutiveDuplicate = document.getElementById('allow-consecutive').checked;
 
+            // 初始化本轮数据
             hasDuplicate = Math.random() < 0.5;
             duplicatePositions = [];
-            chosenImages = [];
+            chosenImages = await generateUniqueImages(numPics);
 
-            // 修复原死循环问题：先生成唯一图片，再处理重复规则
-            const imageIds = new Set();
-            while (imageIds.size < numPics) {
-                imageIds.add(Math.floor(Math.random() * 10000));
-            }
-            const uniqueIds = Array.from(imageIds);
-
-            // 生成基础唯一图片列表
-            for (let i = 0; i < numPics; i++) {
-                chosenImages.push(`https://picsum.photos/800?random=${uniqueIds[i]}`);
-            }
-
-            // 处理「不允许连续重复」规则
-            if (!allowConsecutiveDuplicate) {
-                for (let i = 1; i < chosenImages.length; i++) {
-                    if (chosenImages[i] === chosenImages[i-1]) {
-                        let newId;
-                        do {
-                            newId = Math.floor(Math.random() * 10000);
-                        } while (imageIds.has(newId));
-                        imageIds.add(newId);
-                        chosenImages[i] = `https://picsum.photos/800?random=${newId}`;
-                    }
-                }
-            }
-
-            // 随机添加重复图片
+            // 处理重复逻辑（复用已有的blob URL，确保图片一致）
             if (hasDuplicate) {
-                let duplicateIndex = Math.floor(Math.random() * (numPics - 1));
+                const duplicateIndex = Math.floor(Math.random() * (numPics - 1));
                 let replaceIndex = Math.floor(Math.random() * numPics);
                 while (replaceIndex === duplicateIndex) {
                     replaceIndex = Math.floor(Math.random() * numPics);
@@ -182,54 +198,82 @@
 
             currentIndex = 0;
             round++;
-            document.getElementById('setup').style.display = 'none';
             showImage();
         }
 
+        // 优化后的showImage：保证图片可见时长严格符合设置
         function showImage() {
             if (currentIndex < chosenImages.length) {
                 // 更新进度提示
                 document.getElementById('progress').innerHTML = 
                     `正在显示第 ${currentIndex + 1} / ${chosenImages.length} 张`;
 
-                document.getElementById('image-container').innerHTML = `
-                    <img src="${chosenImages[currentIndex]}">
-                `;
-                setTimeout(() => {
-                    document.getElementById('image-container').innerHTML = '';
+                // 创建图片元素，确保加载完成后再计时
+                const img = document.createElement('img');
+                img.src = chosenImages[currentIndex];
+                img.alt = `第${currentIndex+1}张图片`;
+                img.style.maxWidth = '800px';
+                img.style.display = 'block';
+                img.style.margin = '10px auto';
+
+                // 清空容器并添加图片
+                const imgContainer = document.getElementById('image-container');
+                imgContainer.innerHTML = '';
+                imgContainer.appendChild(img);
+
+                // 关键：图片加载完成后，再启动显示时长的计时
+                img.onload = function() {
                     setTimeout(() => {
-                        currentIndex++;
-                        showImage();
-                    }, 1000);
-                }, secondsPerPic * 1000);
+                        imgContainer.innerHTML = ''; // 清空图片
+                        setTimeout(() => {
+                            currentIndex++;
+                            showImage(); // 加载下一张
+                        }, 1000); // 两张图片间隔1秒
+                    }, secondsPerPic * 1000); // 严格按设置的秒数显示
+                };
+
+                // 图片加载失败的兜底（避免计时卡住）
+                img.onerror = function() {
+                    setTimeout(() => {
+                        imgContainer.innerHTML = '';
+                        setTimeout(() => {
+                            currentIndex++;
+                            showImage();
+                        }, 1000);
+                    }, secondsPerPic * 1000);
+                };
             } else {
+                // 所有图片展示完毕，清空进度提示
+                document.getElementById('progress').innerHTML = '';
                 document.getElementById('duplicate-question').style.display = 'block';
             }
         }
 
         function endRound(answer) {
-            // 核心新增：隐藏进度提示（清空内容+隐藏，二选一或都做）
-            document.getElementById('progress').innerHTML = ''; // 清空文字
-            document.getElementById('progress').style.display = 'none'; // 隐藏元素
-
-            let correct = hasDuplicate ? "是" : "否";
-            let message = "你的回答：" + answer + "。正确答案：" + correct;
+            // 核心修复：清空进度提示，解决progress残留问题
+            document.getElementById('progress').innerHTML = '';
+            
+            // 生成结果提示（拆分三行显示）
+            const correct = hasDuplicate ? "是" : "否";
+            let message = `你的回答：${answer}。\n正确答案：${correct}。`;
             if (hasDuplicate) {
-                message += "。重复位置：" + duplicatePositions.join(" 和 ");
+                message += `\n重复位置：${duplicatePositions.join(" 和 ")}。`;
             }
             document.getElementById('result-message').innerText = message;
             document.getElementById('result-message').style.display = 'block';
             document.getElementById('new-round-question').style.display = 'block';
 
-            let thumbContainer = document.getElementById('thumbnail-container');
+            // 渲染缩略图（使用缓存的blob URL，和展示的图片完全一致）
+            const thumbContainer = document.getElementById('thumbnail-container');
             thumbContainer.innerHTML = "<h3>本轮所有图片缩略图：</h3>";
-            chosenImages.forEach((img, idx) => {
-                thumbContainer.innerHTML += `<img src="${img}" alt="第${idx+1}张">`;
+            chosenImages.forEach((imgBlobUrl, idx) => {
+                thumbContainer.innerHTML += `<img src="${imgBlobUrl}" alt="第${idx+1}张">`;
             });
             thumbContainer.style.display = 'block';
 
-            let sb = document.getElementById('scoreboard-body');
-            let row = document.createElement('tr');
+            // 更新记分板
+            const sb = document.getElementById('scoreboard-body');
+            const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${round}</td>
                 <td>${chosenImages.length}</td>
@@ -240,29 +284,29 @@
             `;
             sb.appendChild(row);
             document.getElementById('scoreboard').style.display = 'block';
+
+            // 释放blob URL，避免内存泄漏
+            chosenImages.forEach(url => URL.revokeObjectURL(url));
         }
 
+        // 页面加载完成后绑定事件
         window.onload = function() {
+            // 开始游戏
             document.getElementById('start-button').addEventListener('click', startGame);
+            // 回答“是”
             document.getElementById('yes-button').addEventListener('click', function() {
                 document.getElementById('duplicate-question').style.display = 'none';
                 endRound("是");
             });
+            // 回答“否”
             document.getElementById('no-button').addEventListener('click', function() {
                 document.getElementById('duplicate-question').style.display = 'none';
                 endRound("否");
             });
-           document.getElementById('yes-round-button').addEventListener('click', function() {
+            // 再来一局
+            document.getElementById('yes-round-button').addEventListener('click', function() {
                 document.getElementById('setup').style.display = 'block';
                 document.getElementById('new-round-question').style.display = 'none';
-                document.getElementById('duplicate-question').style.display = 'none';
-                document.getElementById('image-container').innerHTML = '';
-                document.getElementById('result-message').innerText = '';
-                document.getElementById('result-message').style.display = 'none';
-                document.getElementById('thumbnail-container').innerHTML = '';
-                document.getElementById('thumbnail-container').style.display = 'none';
-                // 再来一局时恢复progress显示（可选）
-                document.getElementById('progress').style.display = 'block';
             });
         };
     </script>
