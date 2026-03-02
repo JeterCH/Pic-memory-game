@@ -118,6 +118,7 @@
             <tbody id="scoreboard-body"></tbody>
         </table>
     </div>
+    
     <script>
         let chosenImages = [];
         let currentIndex = 0;
@@ -192,7 +193,6 @@
         }
 
         function endRound(answer) {
-            document.getElementById('progress').innerHTML = ''; // 隐藏进度提示
             let correct = hasDuplicate ? "是" : "否";
             let message = "你的回答：" + answer + "。正确答案：" + correct;
             if (hasDuplicate) {
@@ -221,3 +221,36 @@
             `;
             sb.appendChild(row);
             document.getElementById('scoreboard').style.display = 'block';
+
+        }
+
+        window.onload = function() {
+            document.getElementById('yes-button').addEventListener('click', function() {
+            document.getElementById('duplicate-question').style.display = 'none';
+            document.getElementById('progress').innerHTML = ''; // 新增：隐藏进度提示
+            endRound("是");
+            });
+
+            document.getElementById('no-button').addEventListener('click', function() {
+            document.getElementById('duplicate-question').style.display = 'none';
+            document.getElementById('progress').innerHTML = ''; // 新增：隐藏进度提示
+            endRound("否");
+            });
+
+           document.getElementById('yes-round-button').addEventListener('click', function() {
+           document.getElementById('setup').style.display = 'block';
+           document.getElementById('new-round-question').style.display = 'none';
+           document.getElementById('duplicate-question').style.display = 'none';
+           document.getElementById('image-container').innerHTML = '';
+           document.getElementById('result-message').innerText = '';
+           document.getElementById('result-message').style.display = 'none';
+           document.getElementById('thumbnail-container').innerHTML = '';
+           document.getElementById('thumbnail-container').style.display = 'none'; // 新增
+           document.getElementById('progress').innerHTML = ''; // 新增，清空进度提示
+           });
+
+        
+        };
+    </script>
+</body>
+</html>
