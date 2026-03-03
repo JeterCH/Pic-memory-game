@@ -44,13 +44,20 @@
         }
 
         /* 下拉框：字号适配，样式统一 */
-        select { 
-            font-size: 48px; 
-            padding: 8px 12px; 
-            border-radius: 6px;
-            border: 1px solid #ddd;
-            margin: 0 8px;
-        }
+select { 
+    font-size: 48px !important; /* 加!important强制生效 */
+    padding: 20px 12px; /* 字号48px时，内边距同步加大，避免文字挤边 */
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    margin: 0 8px;
+    /* 关键：禁用浏览器默认下拉框样式，让自定义字号生效 */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    /* 保证文字垂直居中 */
+    line-height: 48px;
+    height: auto; /* 让高度自适应内容，避免被截断 */
+}
 
         /* 图片：保留宽度，增加底部留白 */
         img { 
