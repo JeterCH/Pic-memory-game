@@ -29,14 +29,14 @@
         /* 按钮：字号适中，点击区域足够大 */
         button { 
             font-size: 48px; 
-            padding: 12px 24px; /* 内边距适配字号，点击区域仍足够 */
-            margin: 8px; 
-            border: none; /* 去掉默认边框，更现代 */
-            border-radius: 8px; /* 圆角更美观 */
-            background-color: #007bff; /* 蓝色按钮更醒目 */
-            color: white; /* 白色文字对比清晰 */
+            padding: 25px 50px; /* 内边距同步放大，保证点击区域和视觉比例 */
+            margin: 15px; /* 外边距放大，避免按钮挤在一起 */
+            border: none; 
+            border-radius: 12px; /* 圆角同步放大，更协调 */
+            background-color: #007bff; 
+            color: white; 
             cursor: pointer;
-            transition: background-color 0.2s; /* hover动效 */
+            transition: background-color 0.2s; 
         }
         /* 按钮hover效果，提升交互体验 */
         button:hover {
@@ -44,20 +44,20 @@
         }
 
         /* 下拉框：字号适配，样式统一 */
-select { 
-    font-size: 48px !important; /* 加!important强制生效 */
-    padding: 20px 12px; /* 字号48px时，内边距同步加大，避免文字挤边 */
-    border-radius: 6px;
-    border: 1px solid #ddd;
-    margin: 0 8px;
-    /* 关键：禁用浏览器默认下拉框样式，让自定义字号生效 */
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    /* 保证文字垂直居中 */
-    line-height: 48px;
-    height: auto; /* 让高度自适应内容，避免被截断 */
-}
+        select { 
+            font-size: 48px !important; /* 加!important强制生效 */
+            padding: 20px 12px; /* 字号48px时，内边距同步加大，避免文字挤边 */
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            margin: 0 8px;
+            /* 关键：禁用浏览器默认下拉框样式，让自定义字号生效 */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            /* 保证文字垂直居中 */
+            line-height: 48px;
+            height: auto; /* 让高度自适应内容，避免被截断 */
+        }
 
         /* 图片：保留宽度，增加底部留白 */
         img { 
@@ -154,7 +154,7 @@ select {
 <body>
     <h1>请记忆图片是否有重复</h1>
     <div id="setup">
-        <label>显示图片数量：</label>
+        <label>图片数量：</label>
         <select id="num-pics">
             <option value="2">2 张</option>
             <option value="3">3 张</option>
@@ -178,7 +178,7 @@ select {
         <br><br>
         <label>
             <input type="checkbox" id="allow-consecutive" checked>
-            允许出现连续重复
+            允许连续重复
         </label>
         <br><br>
         <button id="start-button">开始游戏</button>
@@ -370,7 +370,7 @@ select {
 
             // 渲染缩略图（使用缓存的blob URL，和展示的图片完全一致）
             const thumbContainer = document.getElementById('thumbnail-container');
-            thumbContainer.innerHTML = "<h3>本轮所有图片缩略图：</h3>";
+            thumbContainer.innerHTML = "<h3>本轮所有图片：</h3>";
             chosenImages.forEach((imgBlobUrl, idx) => {
                 thumbContainer.innerHTML += `<img src="${imgBlobUrl}" alt="第${idx+1}张">`;
             });
